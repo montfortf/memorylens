@@ -83,6 +83,41 @@ class OpenAIScorer:
         return [item.embedding for item in response.data]
 
 
+class CachedScorer:
+    """Wraps a ScorerBackend with a text→embedding cache keyed by MD5 hash."""
+
+    def __init__(self, scorer: ScorerBackend) -> None:
+        self._scorer = scorer
+        self._cache: dict[str, list[float]] = {}
+
+    def embed(self, texts: list[str]) -> list[list[float]]:
+        """Return embeddings, using cache for already-seen texts.
+
+        Batches only uncached texts into a single scorer call.
+        """
+        keys = [hashlib.md5(t.encode()).hexdigest() for t in texts]
+
+        # Identify which texts are not yet cached
+        miss_indices: list[int] = []
+        miss_texts: list[str] = []
+        for i, key in enumerate(keys):
+            if key not in self._cache:
+                miss_indices.append(i)
+                miss_texts.append(texts[i])
+
+        # Batch-embed only cache misses
+        if miss_texts:
+            new_embeddings = self._scorer.embed(miss_texts)
+            for i, emb in zip(miss_indices, new_embeddings):
+                self._cache[keys[i]] = emb
+
+        return [self._cache[key] for key in keys]
+
+    def clear_cache(self) -> None:
+        """Remove all cached embeddings."""
+        self._cache.clear()
+
+
 def create_scorer(name: str) -> ScorerBackend:
     """Factory function to create a scorer backend by name."""
     if name == "mock":
