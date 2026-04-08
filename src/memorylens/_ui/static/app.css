@@ -1,0 +1,12 @@
+.badge-write { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+.badge-read { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+.badge-compress { background: rgba(245,158,11,0.15); color: #fbbf24; }
+.badge-update { background: rgba(168,85,247,0.15); color: #c4b5fd; }
+.status-ok { color: #4ade80; }
+.status-error { color: #f87171; }
+.status-dropped { color: #facc15; }
+.row-error { background: rgba(239,68,68,0.03); }
+.row-error:hover { background: rgba(239,68,68,0.06) !important; }
+.score-bar-returned { background: linear-gradient(90deg, rgba(16,185,129,0.3), rgba(16,185,129,0.5)); }
+.score-bar-filtered { background: linear-gradient(90deg, rgba(239,68,68,0.15), rgba(239,68,68,0.25)); }
+.threshold-line { border-left: 2px dashed rgba(251,191,36,0.4); }
