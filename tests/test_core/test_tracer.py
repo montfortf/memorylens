@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from memorylens._core.schema import MemoryOperation, SpanStatus
-from memorylens._core.tracer import TracerProvider, Tracer
 from memorylens._core.context import MemoryContext
 from memorylens._core.processor import SimpleSpanProcessor
+from memorylens._core.schema import MemoryOperation, SpanStatus
+from memorylens._core.tracer import Tracer, TracerProvider
 
 # Reuse CollectingExporter from test_processor
 from tests.test_core.test_processor import CollectingExporter
@@ -67,7 +67,7 @@ class TestTracer:
         tracer = provider.get_tracer("test")
 
         try:
-            with tracer.start_span(operation=MemoryOperation.READ) as span:
+            with tracer.start_span(operation=MemoryOperation.READ):
                 raise ValueError("test error")
         except ValueError:
             pass

@@ -30,9 +30,7 @@ class MemoryContext:
         _current_context.reset(self._token)
 
 
-_current_context: ContextVar[MemoryContext | None] = ContextVar(
-    "memorylens_context", default=None
-)
+_current_context: ContextVar[MemoryContext | None] = ContextVar("memorylens_context", default=None)
 
 
 def get_current_context() -> MemoryContext | None:

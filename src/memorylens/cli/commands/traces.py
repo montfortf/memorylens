@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Optional
 
 import typer
 
@@ -20,10 +19,10 @@ def _get_exporter(db_path: str) -> SQLiteExporter:
 
 @traces_app.command("list")
 def traces_list(
-    operation: Optional[str] = typer.Option(None, help="Filter by operation (e.g. memory.write)"),
-    status: Optional[str] = typer.Option(None, help="Filter by status (ok, error, dropped)"),
-    agent_id: Optional[str] = typer.Option(None, "--agent-id", help="Filter by agent ID"),
-    session_id: Optional[str] = typer.Option(None, "--session-id", help="Filter by session ID"),
+    operation: str | None = typer.Option(None, help="Filter by operation (e.g. memory.write)"),
+    status: str | None = typer.Option(None, help="Filter by status (ok, error, dropped)"),
+    agent_id: str | None = typer.Option(None, "--agent-id", help="Filter by agent ID"),
+    session_id: str | None = typer.Option(None, "--session-id", help="Filter by session ID"),
     limit: int = typer.Option(50, help="Max results"),
     db_path: str = typer.Option(_DEFAULT_DB, "--db-path", help="SQLite database path"),
     use_json: bool = typer.Option(False, "--json", help="Output as JSON"),
@@ -75,7 +74,7 @@ def traces_show(
 
 @traces_app.command("export")
 def traces_export(
-    output: Optional[str] = typer.Option(None, "--output", "-o", help="Output file path"),
+    output: str | None = typer.Option(None, "--output", "-o", help="Output file path"),
     db_path: str = typer.Option(_DEFAULT_DB, "--db-path", help="SQLite database path"),
     limit: int = typer.Option(1000, help="Max spans to export"),
 ) -> None:

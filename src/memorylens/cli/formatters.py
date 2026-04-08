@@ -6,7 +6,6 @@ from typing import Any
 from rich.console import Console
 from rich.table import Table
 
-
 console = Console()
 
 
@@ -41,7 +40,9 @@ def print_spans_table(spans: list[dict[str, Any]]) -> None:
 
 def print_span_detail(span: dict[str, Any]) -> None:
     """Print detailed view of a single span."""
-    console.print(f"\n[bold]Trace: {span.get('span_id', '')} — {span.get('operation', '')}[/bold]\n")
+    op = span.get("operation", "")
+    sid = span.get("span_id", "")
+    console.print(f"\n[bold]Trace: {sid} — {op}[/bold]\n")
     console.print(f"  Status:     {span.get('status', '')}")
     console.print(f"  Duration:   {span.get('duration_ms', 0):.1f}ms")
     console.print(f"  Agent:      {span.get('agent_id', '-') or '-'}")

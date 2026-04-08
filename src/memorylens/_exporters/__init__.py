@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from memorylens._exporters.base import ExportResult, SpanExporter
+from memorylens._exporters.base import ExportResult as ExportResult
+from memorylens._exporters.base import SpanExporter
 
 _EXPORTER_FACTORIES: dict[str, type] = {}
 
@@ -23,14 +24,14 @@ def get_available_exporters() -> list[str]:
 
 
 # Register built-in exporters
-from memorylens._exporters.sqlite import SQLiteExporter
+from memorylens._exporters.sqlite import SQLiteExporter  # noqa: E402
 
 register_exporter("sqlite", SQLiteExporter)
 
-from memorylens._exporters.jsonl import JSONLExporter
+from memorylens._exporters.jsonl import JSONLExporter  # noqa: E402
 
 register_exporter("jsonl", JSONLExporter)
 
-from memorylens._exporters.otlp import OTLPExporter
+from memorylens._exporters.otlp import OTLPExporter  # noqa: E402
 
 register_exporter("otlp", OTLPExporter)

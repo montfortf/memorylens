@@ -10,11 +10,10 @@ def _get_base_memory_class() -> type:
     """Import and return LangChain's BaseMemory class."""
     try:
         from langchain_core.memory import BaseMemory
+
         return BaseMemory
     except ImportError:
-        raise ImportError(
-            "LangChain not found. Install with: pip install memorylens[langchain]"
-        )
+        raise ImportError("LangChain not found. Install with: pip install memorylens[langchain]")
 
 
 class LangChainInstrumentor:

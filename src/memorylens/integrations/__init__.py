@@ -29,13 +29,16 @@ def create_instrumentor(name: str) -> Instrumentor:
 def _register_builtins() -> None:
     try:
         from memorylens.integrations.langchain import LangChainInstrumentor
+
         register_instrumentor("langchain", LangChainInstrumentor)
     except Exception:
         pass
     try:
         from memorylens.integrations.mem0 import Mem0Instrumentor
+
         register_instrumentor("mem0", Mem0Instrumentor)
     except Exception:
         pass
+
 
 _register_builtins()

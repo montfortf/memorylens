@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import sqlite3
 import json
+import sqlite3
 
 from memorylens._core.schema import MemoryOperation, SpanStatus
 from memorylens._core.span import MemorySpan
@@ -76,9 +76,7 @@ class TestSQLiteExporter:
         exporter.export([_make_span()])
 
         conn = sqlite3.connect(db_path)
-        tables = conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table'"
-        ).fetchall()
+        tables = conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
         table_names = [t[0] for t in tables]
         assert "spans" in table_names
         conn.close()
@@ -87,11 +85,13 @@ class TestSQLiteExporter:
     def test_query_by_operation(self, tmp_path):
         db_path = str(tmp_path / "test.db")
         exporter = SQLiteExporter(db_path=db_path)
-        exporter.export([
-            _make_span("s1", operation=MemoryOperation.WRITE),
-            _make_span("s2", operation=MemoryOperation.READ),
-            _make_span("s3", operation=MemoryOperation.WRITE),
-        ])
+        exporter.export(
+            [
+                _make_span("s1", operation=MemoryOperation.WRITE),
+                _make_span("s2", operation=MemoryOperation.READ),
+                _make_span("s3", operation=MemoryOperation.WRITE),
+            ]
+        )
 
         rows = exporter.query(operation="memory.write")
         assert len(rows) == 2
@@ -100,11 +100,13 @@ class TestSQLiteExporter:
     def test_query_by_status(self, tmp_path):
         db_path = str(tmp_path / "test.db")
         exporter = SQLiteExporter(db_path=db_path)
-        exporter.export([
-            _make_span("s1", status=SpanStatus.OK),
-            _make_span("s2", status=SpanStatus.ERROR),
-            _make_span("s3", status=SpanStatus.DROPPED),
-        ])
+        exporter.export(
+            [
+                _make_span("s1", status=SpanStatus.OK),
+                _make_span("s2", status=SpanStatus.ERROR),
+                _make_span("s3", status=SpanStatus.DROPPED),
+            ]
+        )
 
         rows = exporter.query(status="error")
         assert len(rows) == 1

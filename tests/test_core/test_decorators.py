@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+from memorylens._core.context import MemoryContext
 from memorylens._core.decorators import (
     instrument_compress,
     instrument_read,
     instrument_update,
     instrument_write,
 )
-from memorylens._core.context import MemoryContext
 from memorylens._core.processor import SimpleSpanProcessor
 from memorylens._core.schema import MemoryOperation, SpanStatus
 from memorylens._core.tracer import TracerProvider

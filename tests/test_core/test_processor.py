@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import time
 
+from memorylens._core.processor import BatchSpanProcessor, SimpleSpanProcessor
 from memorylens._core.schema import MemoryOperation, SpanStatus
 from memorylens._core.span import MemorySpan
-from memorylens._core.processor import SimpleSpanProcessor, BatchSpanProcessor
-from memorylens._exporters.base import SpanExporter, ExportResult
+from memorylens._exporters.base import ExportResult
 
 
-def _make_span(span_id: str = "s1", operation: MemoryOperation = MemoryOperation.WRITE) -> MemorySpan:
+def _make_span(
+    span_id: str = "s1", operation: MemoryOperation = MemoryOperation.WRITE
+) -> MemorySpan:
     return MemorySpan(
         span_id=span_id,
         trace_id="t1",

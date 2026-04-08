@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import time
 import uuid
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Any, Generator
+from typing import Any
 
 from memorylens._core.context import get_current_context
 from memorylens._core.processor import SpanProcessor
@@ -46,7 +47,9 @@ class _MutableSpan:
     def set_status(self, status: SpanStatus) -> None:
         self.status = status
 
-    def set_content(self, input_content: str | None = None, output_content: str | None = None) -> None:
+    def set_content(  # noqa: E501
+        self, input_content: str | None = None, output_content: str | None = None
+    ) -> None:
         if input_content is not None:
             self.input_content = input_content
         if output_content is not None:

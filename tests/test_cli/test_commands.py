@@ -40,12 +40,14 @@ def _make_span(
 
 def _seed_db(db_path: str) -> None:
     exporter = SQLiteExporter(db_path=db_path)
-    exporter.export([
-        _make_span("s1", "t1", MemoryOperation.WRITE, SpanStatus.OK),
-        _make_span("s2", "t2", MemoryOperation.READ, SpanStatus.OK),
-        _make_span("s3", "t3", MemoryOperation.WRITE, SpanStatus.ERROR),
-        _make_span("s4", "t4", MemoryOperation.WRITE, SpanStatus.DROPPED),
-    ])
+    exporter.export(
+        [
+            _make_span("s1", "t1", MemoryOperation.WRITE, SpanStatus.OK),
+            _make_span("s2", "t2", MemoryOperation.READ, SpanStatus.OK),
+            _make_span("s3", "t3", MemoryOperation.WRITE, SpanStatus.ERROR),
+            _make_span("s4", "t4", MemoryOperation.WRITE, SpanStatus.DROPPED),
+        ]
+    )
     exporter.shutdown()
 
 

@@ -12,7 +12,7 @@ from memorylens._core.decorators import (
     instrument_update,
     instrument_write,
 )
-from memorylens._core.processor import BatchSpanProcessor, SimpleSpanProcessor
+from memorylens._core.processor import BatchSpanProcessor, SimpleSpanProcessor  # noqa: F401
 from memorylens._core.sampler import Sampler
 from memorylens._core.tracer import Tracer, TracerProvider
 

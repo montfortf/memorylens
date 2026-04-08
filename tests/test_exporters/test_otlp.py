@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
+from opentelemetry.sdk.resources import Resource
+
 from memorylens._core.schema import MemoryOperation, SpanStatus
 from memorylens._core.span import MemorySpan
-from memorylens._exporters.base import ExportResult
 from memorylens._exporters.otlp import OTLPExporter, _ReadableSpanAdapter
-from opentelemetry.sdk.resources import Resource
 
 
 def _make_span(span_id: str = "s1") -> MemorySpan:
@@ -48,7 +48,7 @@ class TestOTLPExporter:
         mock_instance.export.return_value = MagicMock(name="SUCCESS")
 
         exporter = OTLPExporter(endpoint="http://localhost:4317")
-        result = exporter.export([_make_span()])
+        exporter.export([_make_span()])
 
         mock_instance.export.assert_called_once()
         args = mock_instance.export.call_args[0][0]

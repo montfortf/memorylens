@@ -10,11 +10,10 @@ def _get_memory_class() -> type:
     """Import and return Mem0's Memory class."""
     try:
         from mem0 import Memory
+
         return Memory
     except ImportError:
-        raise ImportError(
-            "Mem0 not found. Install with: pip install memorylens[mem0]"
-        )
+        raise ImportError("Mem0 not found. Install with: pip install memorylens[mem0]")
 
 
 class Mem0Instrumentor:

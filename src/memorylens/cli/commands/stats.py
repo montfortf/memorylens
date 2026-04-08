@@ -4,11 +4,10 @@ import os
 from collections import Counter
 
 import typer
+from rich.table import Table
 
 from memorylens._exporters.sqlite import SQLiteExporter
 from memorylens.cli.formatters import console, print_json
-
-from rich.table import Table
 
 _DEFAULT_DB = os.path.expanduser("~/.memorylens/traces.db")
 
