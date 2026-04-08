@@ -20,3 +20,13 @@ def create_exporter(name: str, **kwargs: Any) -> SpanExporter:
 
 def get_available_exporters() -> list[str]:
     return sorted(_EXPORTER_FACTORIES.keys())
+
+
+# Register built-in exporters
+from memorylens._exporters.sqlite import SQLiteExporter
+
+register_exporter("sqlite", SQLiteExporter)
+
+from memorylens._exporters.jsonl import JSONLExporter
+
+register_exporter("jsonl", JSONLExporter)
