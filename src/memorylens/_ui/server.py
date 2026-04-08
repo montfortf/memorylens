@@ -43,6 +43,10 @@ def create_app(db_path: str = _DEFAULT_DB, ingest: bool = False) -> FastAPI:
 
     create_drift_routes(app)
 
+    from memorylens._ui.api.alerts import create_alerts_routes
+
+    create_alerts_routes(app)
+
     if ingest:
         from memorylens._ui.api.ingest import create_ingest_routes
 
