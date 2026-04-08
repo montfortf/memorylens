@@ -53,6 +53,7 @@ def init(
     capture_content: bool | None = None,
     sample_rate: float | None = None,
     db_path: str | None = None,
+    detect_drift: bool = False,
 ) -> None:
     """Initialize MemoryLens. Call once at application startup."""
     from memorylens._exporters import create_exporter
@@ -98,6 +99,19 @@ def init(
         exp = create_exporter(name, **kwargs)
         processor = BatchSpanProcessor(exp)
         provider.add_processor(processor)
+
+    # Enable online drift detection
+    if detect_drift:
+        from memorylens._audit.scorer import CachedScorer, MockScorer
+        from memorylens._drift.tracker import VersionTracker
+        from memorylens._exporters.sqlite import SQLiteExporter
+
+        # Re-use or create a SQLiteExporter for the tracker
+        _db = db_path or os.path.expanduser("~/.memorylens/traces.db")
+        _exporter = SQLiteExporter(db_path=_db)
+        _scorer = CachedScorer(MockScorer())  # lightweight default; swap for LocalScorer in prod
+        _tracker = VersionTracker(exporter=_exporter, scorer=_scorer)
+        provider.add_processor(_tracker)
 
     # Auto-instrument frameworks
     if instrument:
