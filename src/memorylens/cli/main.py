@@ -14,6 +14,7 @@ app = typer.Typer(
 def _register_commands() -> None:
     from memorylens.cli.commands.audit import audit_app
     from memorylens.cli.commands.config import config_app
+    from memorylens.cli.commands.cost import cost_app
     from memorylens.cli.commands.stats import stats_app
     from memorylens.cli.commands.traces import traces_app
 
@@ -21,6 +22,7 @@ def _register_commands() -> None:
     app.command(name="stats")(stats_app)
     app.add_typer(config_app, name="config", help="Manage configuration")
     app.add_typer(audit_app, name="audit", help="Compression audit tools")
+    app.add_typer(cost_app, name="cost", help="Cost attribution tools")
 
 
 _register_commands()
