@@ -46,6 +46,63 @@ INSERT OR REPLACE INTO spans (
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 """
 
+_CREATE_VERSIONS_TABLE = """
+CREATE TABLE IF NOT EXISTS memory_versions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    memory_key TEXT NOT NULL,
+    version INTEGER NOT NULL,
+    span_id TEXT NOT NULL,
+    operation TEXT NOT NULL,
+    content TEXT,
+    embedding TEXT,
+    agent_id TEXT,
+    session_id TEXT,
+    timestamp REAL NOT NULL,
+    UNIQUE(memory_key, version)
+)
+"""
+
+_CREATE_VERSIONS_INDEXES = [
+    "CREATE INDEX IF NOT EXISTS idx_versions_memory_key ON memory_versions (memory_key)",
+    "CREATE INDEX IF NOT EXISTS idx_versions_session_id ON memory_versions (session_id)",
+    "CREATE INDEX IF NOT EXISTS idx_versions_timestamp ON memory_versions (timestamp)",
+]
+
+_CREATE_DRIFT_REPORTS_TABLE = """
+CREATE TABLE IF NOT EXISTS drift_reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    report_type TEXT NOT NULL,
+    key TEXT NOT NULL,
+    drift_score REAL NOT NULL,
+    contradiction_score REAL NOT NULL,
+    staleness_score REAL NOT NULL,
+    volatility_score REAL NOT NULL,
+    grade TEXT NOT NULL,
+    details TEXT NOT NULL,
+    created_at REAL NOT NULL,
+    UNIQUE(report_type, key)
+)
+"""
+
+_CREATE_DRIFT_REPORTS_INDEXES = [
+    "CREATE INDEX IF NOT EXISTS idx_drift_reports_type ON drift_reports (report_type)",
+    "CREATE INDEX IF NOT EXISTS idx_drift_reports_grade ON drift_reports (grade)",
+]
+
+_INSERT_VERSION = """
+INSERT OR REPLACE INTO memory_versions (
+    memory_key, version, span_id, operation, content,
+    embedding, agent_id, session_id, timestamp
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+"""
+
+_INSERT_DRIFT_REPORT = """
+INSERT OR REPLACE INTO drift_reports (
+    report_type, key, drift_score, contradiction_score,
+    staleness_score, volatility_score, grade, details, created_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+"""
+
 _CREATE_AUDIT_TABLE = """
 CREATE TABLE IF NOT EXISTS compression_audits (
     span_id TEXT PRIMARY KEY,
@@ -259,6 +316,160 @@ class SQLiteExporter:
             (json.dumps(current), span_id),
         )
         self._conn.commit()
+
+    # ── Version methods ──────────────────────────────────────────────────────
+
+    def _ensure_versions_table(self) -> None:
+        """Create memory_versions table and indexes if they don't exist."""
+        self._conn.execute(_CREATE_VERSIONS_TABLE)
+        for idx_sql in _CREATE_VERSIONS_INDEXES:
+            self._conn.execute(idx_sql)
+        self._conn.commit()
+
+    def save_version(self, version: dict) -> None:
+        """Save a memory version record. Creates table if needed."""
+        self._ensure_versions_table()
+        self._conn.execute(
+            _INSERT_VERSION,
+            (
+                version["memory_key"],
+                version["version"],
+                version["span_id"],
+                version["operation"],
+                version.get("content"),
+                json.dumps(version["embedding"]) if version.get("embedding") else None,
+                version.get("agent_id"),
+                version.get("session_id"),
+                version["timestamp"],
+            ),
+        )
+        self._conn.commit()
+
+    def get_versions(self, memory_key: str) -> list[dict]:
+        """Get all versions for a memory key, ordered by version number."""
+        try:
+            self._ensure_versions_table()
+        except Exception:
+            return []
+        cursor = self._conn.execute(
+            "SELECT * FROM memory_versions WHERE memory_key = ? ORDER BY version ASC",
+            (memory_key,),
+        )
+        rows = [dict(row) for row in cursor.fetchall()]
+        for row in rows:
+            if row.get("embedding") and isinstance(row["embedding"], str):
+                row["embedding"] = json.loads(row["embedding"])
+        return rows
+
+    def get_all_versions(self) -> list[dict]:
+        """Get all memory versions, ordered by memory_key then version."""
+        try:
+            self._ensure_versions_table()
+        except Exception:
+            return []
+        cursor = self._conn.execute(
+            "SELECT * FROM memory_versions ORDER BY memory_key ASC, version ASC"
+        )
+        rows = [dict(row) for row in cursor.fetchall()]
+        for row in rows:
+            if row.get("embedding") and isinstance(row["embedding"], str):
+                row["embedding"] = json.loads(row["embedding"])
+        return rows
+
+    # ── Drift report methods ─────────────────────────────────────────────────
+
+    def _ensure_drift_reports_table(self) -> None:
+        """Create drift_reports table and indexes if they don't exist."""
+        self._conn.execute(_CREATE_DRIFT_REPORTS_TABLE)
+        for idx_sql in _CREATE_DRIFT_REPORTS_INDEXES:
+            self._conn.execute(idx_sql)
+        self._conn.commit()
+
+    def save_drift_report(self, report: dict) -> None:
+        """Save (upsert) a drift report. Creates table if needed."""
+        import time
+
+        self._ensure_drift_reports_table()
+        self._conn.execute(
+            _INSERT_DRIFT_REPORT,
+            (
+                report["report_type"],
+                report["key"],
+                report["drift_score"],
+                report["contradiction_score"],
+                report["staleness_score"],
+                report["volatility_score"],
+                report["grade"],
+                json.dumps(report.get("details", {})),
+                report.get("created_at", time.time()),
+            ),
+        )
+        self._conn.commit()
+
+    def get_drift_report(self, report_type: str, key: str) -> dict | None:
+        """Get a single drift report by type + key, or None if not found."""
+        try:
+            self._ensure_drift_reports_table()
+        except Exception:
+            return None
+        cursor = self._conn.execute(
+            "SELECT * FROM drift_reports WHERE report_type = ? AND key = ?",
+            (report_type, key),
+        )
+        row = cursor.fetchone()
+        if row is None:
+            return None
+        result = dict(row)
+        if isinstance(result.get("details"), str):
+            result["details"] = json.loads(result["details"])
+        return result
+
+    def list_drift_reports(
+        self,
+        report_type: str | None = None,
+        min_grade: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[list[dict], int]:
+        """List drift reports with optional filters. Returns (rows, total_count).
+
+        min_grade filters to grades >= that letter (F < D < C < B < A).
+        E.g. min_grade="D" returns D and F reports.
+        """
+        self._ensure_drift_reports_table()
+
+        _GRADE_ORDER = {"A": 4, "B": 3, "C": 2, "D": 1, "F": 0}
+
+        conditions: list[str] = []
+        params: list[Any] = []
+
+        if report_type:
+            conditions.append("report_type = ?")
+            params.append(report_type)
+
+        if min_grade and min_grade in _GRADE_ORDER:
+            # Include grades with severity >= min_grade (lower score = worse)
+            max_score = _GRADE_ORDER[min_grade]
+            qualifying = [g for g, s in _GRADE_ORDER.items() if s <= max_score]
+            placeholders = ",".join("?" * len(qualifying))
+            conditions.append(f"grade IN ({placeholders})")
+            params.extend(qualifying)
+
+        where = " AND ".join(conditions) if conditions else "1=1"
+        count_sql = f"SELECT COUNT(*) FROM drift_reports WHERE {where}"
+        total = self._conn.execute(count_sql, params).fetchone()[0]
+
+        sql = (
+            f"SELECT * FROM drift_reports WHERE {where} "
+            "ORDER BY created_at DESC LIMIT ? OFFSET ?"
+        )
+        row_params = params + [limit, offset]
+        cursor = self._conn.execute(sql, row_params)
+        rows = [dict(row) for row in cursor.fetchall()]
+        for row in rows:
+            if isinstance(row.get("details"), str):
+                row["details"] = json.loads(row["details"])
+        return rows, total
 
     def shutdown(self) -> None:
         self._conn.close()
