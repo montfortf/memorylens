@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Optional
 
 import typer
 from rich.table import Table
@@ -18,7 +17,7 @@ _DEFAULT_DB = os.path.expanduser("~/.memorylens/traces.db")
 @cost_app.command("enrich")
 def cost_enrich(
     db_path: str = typer.Option(_DEFAULT_DB, "--db-path", help="SQLite database path"),
-    trace_id: Optional[str] = typer.Option(None, "--trace-id", help="Enrich specific trace"),
+    trace_id: str | None = typer.Option(None, "--trace-id", help="Enrich specific trace"),
     force: bool = typer.Option(False, "--force", help="Recalculate all costs"),
 ) -> None:
     """Compute dollar costs from token counts in span attributes."""
@@ -110,7 +109,7 @@ def cost_report(
 
 @cost_app.command("pricing")
 def cost_pricing(
-    set_value: Optional[str] = typer.Option(None, "--set", help="Set pricing: model.input=0.001"),
+    set_value: str | None = typer.Option(None, "--set", help="Set pricing: model.input=0.001"),
 ) -> None:
     """Show or update pricing table."""
     from pathlib import Path

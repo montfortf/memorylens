@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import json
-
 from typer.testing import CliRunner
 
 from memorylens._core.schema import MemoryOperation, SpanStatus

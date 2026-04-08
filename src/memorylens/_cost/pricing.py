@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
 
 DEFAULT_PRICING: dict[str, dict[str, float]] = {
     "gpt-4o": {"input": 0.0000025, "output": 0.00001},
