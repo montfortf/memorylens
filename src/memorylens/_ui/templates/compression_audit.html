@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Compression Audit — MemoryLens{% endblock %}
+{% block content %}
+<div class="px-6 pt-4">
+    <div class="text-[11px] text-white/30 mb-2">
+        <a href="/traces" class="text-indigo-400 hover:text-indigo-300">← Traces</a>
+        / <a href="/traces/{{ span.trace_id }}" class="text-indigo-400 hover:text-indigo-300">{{ span.trace_id[:12] }}</a>
+        / Compression Audit
+    </div>
+    <div class="flex items-center gap-3 mb-1">
+        <h2 class="text-xl font-semibold">Compression Audit</h2>
+        <span class="px-2 py-0.5 rounded text-[11px] {{ span._badge }}">{{ span.operation }}</span>
+        <span class="text-xs status-{{ span.status }}">● {{ span.status }}</span>
+    </div>
+    <div class="text-xs text-white/35">{{ span.agent_id or '-' }} · {{ span.session_id or '-' }} · {{ "%.1f"|format(span.duration_ms) }}ms</div>
+</div>
+
+<div class="px-6 py-4">
+{% if audit %}
+    {# Summary card #}
+    <div class="grid grid-cols-4 gap-4 mb-5">
+        <div class="bg-white/[0.03] rounded-md border border-white/[0.06] p-4 text-center">
+            <div class="text-[11px] uppercase tracking-wider text-white/30 mb-1">Loss Score</div>
+            <div class="text-2xl font-mono font-bold
+                {% if audit.semantic_loss_score < 0.3 %}text-emerald-400
+                {% elif audit.semantic_loss_score < 0.6 %}text-amber-400
+                {% else %}text-red-400{% endif %}">
+                {{ "%.2f"|format(audit.semantic_loss_score) }}
+            </div>
+            <div class="text-[10px] text-white/30 mt-1">
+                {% if audit.semantic_loss_score < 0.3 %}low loss
+                {% elif audit.semantic_loss_score < 0.6 %}moderate loss
+                {% else %}high loss{% endif %}
+            </div>
+        </div>
+        <div class="bg-white/[0.03] rounded-md border border-white/[0.06] p-4 text-center">
+            <div class="text-[11px] uppercase tracking-wider text-white/30 mb-1">Compression Ratio</div>
+            <div class="text-2xl font-mono font-bold text-slate-200">{{ "%.0f"|format((1 - audit.compression_ratio) * 100) }}%</div>
+            <div class="text-[10px] text-white/30 mt-1">reduction</div>
+        </div>
+        <div class="bg-white/[0.03] rounded-md border border-white/[0.06] p-4 text-center">
+            <div class="text-[11px] uppercase tracking-wider text-white/30 mb-1">Preserved</div>
+            {% set preserved = audit.sentences|selectattr("status", "eq", "preserved")|list|length %}
+            <div class="text-2xl font-mono font-bold text-emerald-400">{{ preserved }}/{{ audit.sentences|length }}</div>
+            <div class="text-[10px] text-white/30 mt-1">sentences</div>
+        </div>
+        <div class="bg-white/[0.03] rounded-md border border-white/[0.06] p-4 text-center">
+            <div class="text-[11px] uppercase tracking-wider text-white/30 mb-1">Lost</div>
+            {% set lost = audit.sentences|selectattr("status", "eq", "lost")|list|length %}
+            <div class="text-2xl font-mono font-bold text-red-400">{{ lost }}/{{ audit.sentences|length }}</div>
+            <div class="text-[10px] text-white/30 mt-1">sentences</div>
+        </div>
+    </div>
+
+    {# Sentence diff #}
+    {% include "partials/sentence_diff.html" %}
+
+    {# Post-compression content #}
+    {% if span.output_content %}
+    <div class="mt-5">
+        <div class="text-[11px] uppercase tracking-wider text-white/30 mb-1.5">Post-compression</div>
+        <div class="px-4 py-3 bg-white/[0.03] rounded-md border border-white/[0.06] font-mono text-xs leading-relaxed text-slate-300">
+            {{ span.output_content }}
+        </div>
+    </div>
+    {% endif %}
+
+{% else %}
+    {# No audit yet #}
+    <div class="bg-white/[0.03] rounded-md border border-white/[0.06] p-8 text-center">
+        <div class="text-white/40 mb-4">This span has not been audited yet.</div>
+        <form method="post" action="/api/traces/{{ span.trace_id }}/audit?scorer=mock">
+            <button type="submit"
+                class="px-4 py-2 rounded-md bg-indigo-500/20 border border-indigo-500/30 text-sm text-indigo-400 hover:bg-indigo-500/30 cursor-pointer">
+                Run Audit
+            </button>
+        </form>
+        <div class="text-[11px] text-white/20 mt-3">
+            For local embeddings: pip install memorylens[audit]
+        </div>
+    </div>
+{% endif %}
+</div>
+{% endblock %}

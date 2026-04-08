@@ -1,0 +1,37 @@
+<div class="mb-5">
+    <div class="text-[11px] uppercase tracking-wider text-white/30 mb-2.5">Sentence Analysis</div>
+    <div class="bg-white/[0.03] rounded-md border border-white/[0.06] p-5">
+        <div class="flex flex-col gap-2">
+        {% for s in audit.sentences %}
+            {% set pct = (s.best_match_score * 100)|int %}
+            {% set preserved = s.status == "preserved" %}
+            <div class="flex items-center gap-3 {% if not preserved %}opacity-60{% endif %}">
+                <div class="w-6 text-center text-[13px]">
+                    {% if preserved %}
+                    <span class="text-emerald-400">✓</span>
+                    {% else %}
+                    <span class="text-red-400">✗</span>
+                    {% endif %}
+                </div>
+                <div class="flex-1 relative h-7 bg-white/[0.02] rounded overflow-hidden">
+                    <div class="absolute left-0 top-0 h-full rounded-sm flex items-center pl-2.5 text-[11px]
+                        {% if preserved %}score-bar-returned text-emerald-200{% else %}score-bar-filtered text-red-300{% endif %}"
+                        style="width:{{ pct }}%">
+                        {{ s.text[:50] }}{% if s.text|length > 50 %}...{% endif %}
+                    </div>
+                </div>
+                <div class="w-12 text-right font-mono text-[13px] {% if preserved %}text-emerald-400 font-semibold{% else %}text-red-400{% endif %}">
+                    {{ "%.2f"|format(s.best_match_score) }}
+                </div>
+                <div class="w-20">
+                    {% if preserved %}
+                    <span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 text-[10px]">PRESERVED</span>
+                    {% else %}
+                    <span class="px-2 py-0.5 rounded bg-red-500/10 text-red-400 text-[10px] border border-red-500/20">LOST</span>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+</div>

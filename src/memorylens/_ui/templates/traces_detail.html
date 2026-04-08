@@ -67,6 +67,9 @@
             {% if span.operation == 'memory.read' %}
             <a href="/traces/{{ span.trace_id }}/retrieval" class="px-3.5 py-1.5 rounded-md bg-indigo-500/15 border border-indigo-500/30 text-xs text-indigo-400 hover:bg-indigo-500/25">Debug Retrieval →</a>
             {% endif %}
+            {% if span.operation == 'memory.compress' %}
+            <a href="/traces/{{ span.trace_id }}/compression" class="px-3.5 py-1.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-xs text-amber-400 hover:bg-amber-500/25">Debug Compression →</a>
+            {% endif %}
         </div>
     </div>
 </div>
