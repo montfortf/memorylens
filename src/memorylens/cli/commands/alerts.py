@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 import time
-from typing import Optional
 
 import typer
 from rich.table import Table
@@ -20,14 +19,17 @@ _VALID_TYPES = {"drift", "cost", "retrieval", "compression_loss", "error_rate"}
 @alerts_app.command("add")
 def alerts_add(
     name: str = typer.Argument(..., help="Alert rule name"),
-    alert_type: str = typer.Option(..., "--type", help="Alert type: drift, cost, retrieval, compression_loss, error_rate"),
+    alert_type: str = typer.Option(
+        ..., "--type", help="Alert type: drift, cost, retrieval, compression_loss, error_rate"
+    ),
     threshold: float = typer.Option(..., "--threshold", help="Threshold value"),
-    webhook: Optional[str] = typer.Option(None, "--webhook", help="Webhook URL for notifications"),
+    webhook: str | None = typer.Option(None, "--webhook", help="Webhook URL for notifications"),
     db_path: str = typer.Option(_DEFAULT_DB, "--db-path", help="SQLite database path"),
 ) -> None:
     """Add a new alert rule."""
     if alert_type not in _VALID_TYPES:
-        console.print(f"[red]Unknown alert type '{alert_type}'. Valid: {', '.join(sorted(_VALID_TYPES))}[/red]")
+        valid = ", ".join(sorted(_VALID_TYPES))
+        console.print(f"[red]Unknown alert type '{alert_type}'. Valid: {valid}[/red]")
         raise typer.Exit(1)
 
     exporter = SQLiteExporter(db_path=db_path)
@@ -40,7 +42,9 @@ def alerts_add(
             "enabled": True,
             "created_at": time.time(),
         })
-        console.print(f"[green]Alert rule '{name}' added.[/green] Type: {alert_type}, threshold: {threshold}")
+        console.print(
+            f"[green]Alert rule '{name}' added.[/green] Type: {alert_type}, threshold: {threshold}"
+        )
     except Exception as exc:
         console.print(f"[red]Failed to add rule: {exc}[/red]")
         raise typer.Exit(1)
@@ -134,7 +138,7 @@ def alerts_disable(
 
 @alerts_app.command("history")
 def alerts_history(
-    alert_type: Optional[str] = typer.Option(None, "--type", help="Filter by alert type"),
+    alert_type: str | None = typer.Option(None, "--type", help="Filter by alert type"),
     limit: int = typer.Option(20, "--limit", help="Max rows to show"),
     db_path: str = typer.Option(_DEFAULT_DB, "--db-path", help="SQLite database path"),
 ) -> None:
