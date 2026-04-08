@@ -1,7 +1,60 @@
 {% extends "base.html" %}
 {% block title %}Retrieval Debugger — MemoryLens{% endblock %}
 {% block content %}
+{% set attrs = span._attrs %}
+{% set scores = attrs.get('scores', []) %}
+{% set threshold = attrs.get('threshold', 0) %}
+{% set top_k = attrs.get('top_k', 0) %}
+{% set results_count = attrs.get('results_count', 0) %}
+{% set query = attrs.get('query', span.input_content or '') %}
+
+<div class="px-6 pt-4">
+    <div class="text-[11px] text-white/30 mb-2">
+        <a href="/traces" class="text-indigo-400 hover:text-indigo-300">← Traces</a>
+        / <a href="/traces/{{ span.trace_id }}" class="text-indigo-400 hover:text-indigo-300">{{ span.trace_id[:12] }}</a>
+        / Retrieval Debugger
+    </div>
+    <div class="flex items-center gap-3 mb-1">
+        <h2 class="text-xl font-semibold">Retrieval Debugger</h2>
+        <span class="px-2 py-0.5 rounded text-[11px] {{ span._badge }}">{{ span.operation }}</span>
+        <span class="text-xs status-{{ span.status }}">● {{ span.status }}</span>
+    </div>
+    <div class="text-xs text-white/35">{{ span.agent_id or '-' }} · {{ span.session_id or '-' }} · {{ "%.1f"|format(span.duration_ms) }}ms</div>
+</div>
+
 <div class="px-6 py-4">
-    <p>Retrieval debugger placeholder — {{ span.trace_id }}</p>
+    <div class="grid grid-cols-2 gap-4 mb-5">
+        <div>
+            <div class="text-[11px] uppercase tracking-wider text-white/30 mb-1.5">Query</div>
+            <div class="px-4 py-3 bg-white/[0.03] rounded-md border border-white/[0.06] font-mono text-[13px]">{{ query }}</div>
+        </div>
+        <div>
+            <div class="text-[11px] uppercase tracking-wider text-white/30 mb-1.5">Parameters</div>
+            <div class="px-4 py-3 bg-white/[0.03] rounded-md border border-white/[0.06] flex gap-5">
+                <div><span class="text-white/40 text-[11px]">backend</span><br><span class="text-[13px]">{{ attrs.get('backend', '-') }}</span></div>
+                <div><span class="text-white/40 text-[11px]">top_k</span><br><span class="font-mono text-[13px]">{{ top_k }}</span></div>
+                <div><span class="text-white/40 text-[11px]">threshold</span><br><span class="font-mono text-[13px] text-amber-400">{{ threshold }}</span></div>
+                <div><span class="text-white/40 text-[11px]">results</span><br><span class="font-mono text-[13px]">{{ results_count }} / {{ top_k }}</span></div>
+            </div>
+        </div>
+    </div>
+
+    {% include "partials/score_chart.html" %}
+
+    {% set near_misses = [] %}
+    {% for score in scores %}
+        {% if score < threshold and score >= threshold - 0.10 %}
+            {% if near_misses.append(score) %}{% endif %}
+        {% endif %}
+    {% endfor %}
+    {% if near_misses %}
+    <div class="bg-amber-500/[0.08] border border-amber-500/20 border-l-[3px] border-l-amber-500 rounded-md px-4 py-3 mb-5">
+        <div class="text-[11px] font-semibold text-amber-400 mb-1">THRESHOLD INSIGHT</div>
+        <div class="text-xs text-white/60">
+            {{ near_misses|length }} candidate(s) scored within 0.10 of the <strong class="text-amber-400">{{ threshold }}</strong> threshold.
+            If relevant memories are being filtered out, consider lowering the threshold or improving query specificity.
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
