@@ -12,7 +12,9 @@ validate_app = typer.Typer(no_args_is_help=True)
 
 @validate_app.command("integration")
 def validate_integration(
-    module_path: str = typer.Argument(..., help="Python module path (e.g. my_package.instrumentor)"),
+    module_path: str = typer.Argument(
+        ..., help="Python module path (e.g. my_package.instrumentor)"
+    ),
 ) -> None:
     """Validate a MemoryLens integration module."""
     checks_passed = 0
@@ -41,7 +43,9 @@ def validate_integration(
             console.print(f"  [green]✓[/green] Found instrumentor: {name}")
         checks_passed += 1
     else:
-        console.print("  [red]✗[/red] No instrumentor found (need class with instrument/uninstrument)")
+        console.print(
+            "  [red]✗[/red] No instrumentor found (need class with instrument/uninstrument)"
+        )
         checks_failed += 1
         _print_summary(checks_passed, checks_failed, module_path)
         return
@@ -83,4 +87,6 @@ def _print_summary(passed: int, failed: int, module_path: str) -> None:
     if failed == 0:
         console.print(f"\n[green]PASSED[/green]: {module_path} ({passed}/{total} checks)")
     else:
-        console.print(f"\n[red]FAILED[/red]: {module_path} ({passed}/{total} checks passed, {failed} failed)")
+        console.print(
+            f"\n[red]FAILED[/red]: {module_path} ({passed}/{total} checks passed, {failed} failed)"
+        )

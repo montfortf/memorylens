@@ -84,6 +84,16 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 export OTEL_SERVICE_NAME=my-agent
 ```
 
+## Community Integrations
+
+Want to add support for a new memory framework? See the [Instrumentation Spec v1](docs/instrumentation-spec-v1.md) for the protocol, required span attributes, implementation patterns, and a complete working example.
+
+Validate your integration with:
+
+```bash
+memorylens validate integration my_package.instrumentor
+```
+
 ## License
 
 Apache 2.0

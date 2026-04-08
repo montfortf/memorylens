@@ -38,7 +38,9 @@ class TestIntegrationTestHelper:
     def test_assert_attribute_exists(self):
         helper = IntegrationTestHelper()
         tracer = TracerProvider.get().get_tracer("test")
-        with tracer.start_span(operation=MemoryOperation.WRITE, attributes={"framework": "myfw", "backend": "db"}):
+        with tracer.start_span(
+            operation=MemoryOperation.WRITE, attributes={"framework": "myfw", "backend": "db"}
+        ):
             pass
         helper.assert_attribute(0, "framework")
         helper.assert_attribute(0, "backend", "db")

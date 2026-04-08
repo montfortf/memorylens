@@ -9,14 +9,18 @@ runner = CliRunner()
 
 class TestValidateIntegration:
     def test_validate_existing_langchain(self):
-        result = runner.invoke(app, ["validate", "integration", "memorylens.integrations.langchain.instrumentor"])
+        result = runner.invoke(
+            app, ["validate", "integration", "memorylens.integrations.langchain.instrumentor"]
+        )
         assert result.exit_code == 0
         # Module imports fine; instrument() will fail because langchain isn't installed
         assert "Import successful" in result.output
         assert "Found instrumentor" in result.output
 
     def test_validate_existing_mem0(self):
-        result = runner.invoke(app, ["validate", "integration", "memorylens.integrations.mem0.instrumentor"])
+        result = runner.invoke(
+            app, ["validate", "integration", "memorylens.integrations.mem0.instrumentor"]
+        )
         assert result.exit_code == 0
         # Module imports fine; instrument() will fail because mem0 isn't installed
         assert "Import successful" in result.output
