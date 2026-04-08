@@ -39,6 +39,24 @@ def _register_builtins() -> None:
         register_instrumentor("mem0", Mem0Instrumentor)
     except Exception:
         pass
+    try:
+        from memorylens.integrations.llamaindex import LlamaIndexInstrumentor
+
+        register_instrumentor("llamaindex", LlamaIndexInstrumentor)
+    except Exception:
+        pass
+    try:
+        from memorylens.integrations.letta import LettaInstrumentor
+
+        register_instrumentor("letta", LettaInstrumentor)
+    except Exception:
+        pass
+    try:
+        from memorylens.integrations.zep import ZepInstrumentor
+
+        register_instrumentor("zep", ZepInstrumentor)
+    except Exception:
+        pass
 
 
 _register_builtins()

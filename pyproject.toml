@@ -34,6 +34,9 @@ dependencies = [
 [project.optional-dependencies]
 langchain = ["langchain-core>=0.1"]
 mem0 = ["mem0ai>=0.1"]
+llamaindex = ["llama-index-core>=0.10"]
+letta = ["letta-client>=0.1"]
+zep = ["zep-python>=2.0"]
 ui = [
     "fastapi>=0.110",
     "uvicorn[standard]>=0.29",
