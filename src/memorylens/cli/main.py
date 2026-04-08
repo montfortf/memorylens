@@ -19,6 +19,7 @@ def _register_commands() -> None:
     from memorylens.cli.commands.drift import drift_app
     from memorylens.cli.commands.stats import stats_app
     from memorylens.cli.commands.traces import traces_app
+    from memorylens.cli.commands.validate import validate_app
 
     app.add_typer(traces_app, name="traces", help="Inspect and manage traces")
     app.command(name="stats")(stats_app)
@@ -27,6 +28,7 @@ def _register_commands() -> None:
     app.add_typer(cost_app, name="cost", help="Cost attribution tools")
     app.add_typer(drift_app, name="drift", help="Memory drift detection")
     app.add_typer(alerts_app, name="alerts", help="Threshold-based alerting")
+    app.add_typer(validate_app, name="validate", help="Validate integrations")
 
 
 _register_commands()
