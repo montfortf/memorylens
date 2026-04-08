@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import numpy as np
-
 from memorylens._audit.scorer import MockScorer, cosine_similarity, create_scorer
 
 

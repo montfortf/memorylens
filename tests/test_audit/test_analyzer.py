@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from memorylens._audit.analyzer import CompressionAnalyzer, CompressionAudit, SentenceAnalysis
+from memorylens._audit.analyzer import CompressionAnalyzer, CompressionAudit
 from memorylens._audit.scorer import MockScorer
 
 
