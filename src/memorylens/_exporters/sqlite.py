@@ -244,5 +244,21 @@ class SQLiteExporter:
         rows = [dict(row) for row in cursor.fetchall()]
         return rows, total
 
+    def update_span_attributes(self, span_id: str, new_attrs: dict[str, Any]) -> None:
+        """Merge new_attrs into existing span attributes JSON."""
+        cursor = self._conn.execute(
+            "SELECT attributes FROM spans WHERE span_id = ?", (span_id,)
+        )
+        row = cursor.fetchone()
+        if row is None:
+            return
+        current = json.loads(row[0]) if row[0] else {}
+        current.update(new_attrs)
+        self._conn.execute(
+            "UPDATE spans SET attributes = ? WHERE span_id = ?",
+            (json.dumps(current), span_id),
+        )
+        self._conn.commit()
+
     def shutdown(self) -> None:
         self._conn.close()
