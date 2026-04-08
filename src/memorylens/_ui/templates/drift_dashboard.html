@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Drift Dashboard — MemoryLens{% endblock %}
+{% block content %}
+<div class="px-6 pt-4 pb-2">
+    <h2 class="text-xl font-semibold mb-1">Memory Drift</h2>
+    <p class="text-xs text-white/40 mb-4">Track how memories evolve, detect contradictions and staleness.</p>
+
+    <!-- Type tabs -->
+    <div class="flex gap-3 mb-4 border-b border-white/[0.06] pb-2">
+        {% for tab in [('entity', 'Entities'), ('session', 'Sessions'), ('topic', 'Topics')] %}
+        <a href="/drift?type={{ tab[0] }}"
+           class="text-xs pb-1 {% if active_type == tab[0] %}text-indigo-400 border-b-2 border-indigo-400{% else %}text-white/40 hover:text-white/60{% endif %}">
+            {{ tab[1] }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Grade filter -->
+    <div class="flex gap-2 mb-4 items-center">
+        <span class="text-xs text-white/40">Min grade:</span>
+        {% for g in ['A', 'B', 'C', 'D', 'F'] %}
+        <a href="/drift?type={{ active_type }}&grade={{ g }}"
+           class="px-2 py-0.5 rounded text-[11px] font-semibold
+                  {% if active_grade == g %}bg-white/20{% else %}bg-white/5 hover:bg-white/10{% endif %}
+                  {% if g == 'A' %}text-green-400{% elif g == 'B' %}text-blue-400{% elif g == 'C' %}text-amber-400{% elif g == 'D' %}text-orange-400{% else %}text-red-400{% endif %}">
+            {{ g }}
+        </a>
+        {% endfor %}
+        {% if active_grade %}
+        <a href="/drift?type={{ active_type }}" class="text-xs text-white/30 hover:text-white/50 ml-1">clear</a>
+        {% endif %}
+    </div>
+
+    {% include "partials/drift_table.html" %}
+
+    <!-- Pagination -->
+    <div class="flex gap-3 mt-4 text-xs text-white/40">
+        <span>{{ total }} total</span>
+        {% if offset > 0 %}
+        <a href="/drift?type={{ active_type }}{% if active_grade %}&grade={{ active_grade }}{% endif %}&offset={{ [offset - limit, 0]|max }}&limit={{ limit }}"
+           class="text-indigo-400 hover:text-indigo-300">← Prev</a>
+        {% endif %}
+        {% if offset + limit < total %}
+        <a href="/drift?type={{ active_type }}{% if active_grade %}&grade={{ active_grade }}{% endif %}&offset={{ offset + limit }}&limit={{ limit }}"
+           class="text-indigo-400 hover:text-indigo-300">Next →</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Drift: {{ memory_key }} — MemoryLens{% endblock %}
+{% block content %}
+<div class="px-6 pt-4">
+    <div class="text-[11px] text-white/30 mb-2">
+        <a href="/drift" class="text-indigo-400 hover:text-indigo-300">← Drift</a> / {{ memory_key }}
+    </div>
+    <h2 class="text-xl font-semibold mb-1 font-mono">{{ memory_key }}</h2>
+
+    {% if report %}
+    <!-- Health Score Header -->
+    <div class="flex items-center gap-4 mb-6 mt-3">
+        <div class="flex items-center justify-center w-14 h-14 rounded-xl font-bold text-2xl
+            {% if report.grade == 'A' %}bg-green-500/15 text-green-400
+            {% elif report.grade == 'B' %}bg-blue-500/15 text-blue-400
+            {% elif report.grade == 'C' %}bg-amber-500/15 text-amber-400
+            {% elif report.grade == 'D' %}bg-orange-500/15 text-orange-400
+            {% else %}bg-red-500/15 text-red-400{% endif %}">
+            {{ report.grade }}
+        </div>
+        <div class="flex-1 grid grid-cols-4 gap-3">
+            {% for label, value in [
+                ('Drift', report.drift_score),
+                ('Contradiction', report.contradiction_score),
+                ('Staleness', report.staleness_score),
+                ('Volatility', report.volatility_score)
+            ] %}
+            <div class="bg-white/[0.03] rounded-md border border-white/[0.06] px-3 py-2">
+                <div class="text-[10px] uppercase tracking-wider text-white/30 mb-1">{{ label }}</div>
+                <div class="text-sm font-mono font-semibold">{{ "%.3f"|format(value) }}</div>
+                <div class="mt-1.5 h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                    <div class="h-full rounded-full
+                        {% if value < 0.3 %}bg-green-500{% elif value < 0.6 %}bg-amber-500{% else %}bg-red-500{% endif %}"
+                         style="width: {{ (value * 100)|round|int }}%"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Version Timeline -->
+    {% include "partials/version_timeline.html" %}
+</div>
+{% endblock %}

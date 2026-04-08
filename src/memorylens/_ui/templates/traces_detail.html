@@ -9,6 +9,11 @@
         <h2 class="text-xl font-semibold">Trace {{ span.trace_id[:12] }}</h2>
         <span class="px-2 py-0.5 rounded text-[11px] {{ span._badge }}">{{ span.operation }}</span>
         <span class="text-xs status-{{ span.status }}">● {{ span.status }}</span>
+        {% if span.operation in ('memory.write', 'memory.update') and span._attrs.get('drift_detected') %}
+        <span class="px-2 py-0.5 rounded text-[11px] bg-red-500/15 text-red-400 border border-red-500/20">
+            ⚠ drift {{ "%.2f"|format(span._attrs.get('drift_score', 0)) }}
+        </span>
+        {% endif %}
     </div>
     <div class="text-xs text-white/35">{{ span.agent_id or '-' }} · {{ span.session_id or '-' }} · {{ "%.1f"|format(span.duration_ms) }}ms{% if span._attrs.get('cost_usd') %} · ${{ "%.4f"|format(span._attrs.cost_usd) }}{% endif %}</div>
 </div>
@@ -69,6 +74,9 @@
             {% endif %}
             {% if span.operation == 'memory.compress' %}
             <a href="/traces/{{ span.trace_id }}/compression" class="px-3.5 py-1.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-xs text-amber-400 hover:bg-amber-500/25">Debug Compression →</a>
+            {% endif %}
+            {% if span.operation in ('memory.write', 'memory.update') and span._attrs.get('memory_key') %}
+            <a href="/drift/{{ span._attrs.get('memory_key') }}" class="px-3.5 py-1.5 rounded-md bg-rose-500/15 border border-rose-500/30 text-xs text-rose-400 hover:bg-rose-500/25">Drift History →</a>
             {% endif %}
         </div>
     </div>

@@ -32,13 +32,20 @@ def create_app(db_path: str = _DEFAULT_DB, ingest: bool = False) -> FastAPI:
         return RedirectResponse(url="/traces")
 
     from memorylens._ui.api.traces import create_trace_routes
+
     create_trace_routes(app)
 
     from memorylens._ui.api.compression import create_compression_routes
+
     create_compression_routes(app)
+
+    from memorylens._ui.api.drift import create_drift_routes
+
+    create_drift_routes(app)
 
     if ingest:
         from memorylens._ui.api.ingest import create_ingest_routes
+
         create_ingest_routes(app)
 
     return app

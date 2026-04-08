@@ -1,0 +1,38 @@
+{% if versions %}
+<div class="mb-4">
+    <div class="text-[11px] uppercase tracking-wider text-white/30 mb-3">
+        Version History ({{ versions|length }})
+    </div>
+    <div class="relative pl-4 border-l border-white/[0.08]">
+        {% for v in versions %}
+        <div class="mb-4 relative">
+            <div class="absolute -left-[21px] w-2.5 h-2.5 rounded-full border-2
+                {% if v._sim_to_prev is not none and v._sim_to_prev < 0.5 %}border-red-400 bg-red-400/30
+                {% elif v._sim_to_prev is not none and v._sim_to_prev < 0.8 %}border-amber-400 bg-amber-400/30
+                {% else %}border-indigo-400 bg-indigo-400/20{% endif %}">
+            </div>
+            <div class="ml-3">
+                <div class="flex items-center gap-2 mb-0.5">
+                    <span class="text-xs font-semibold text-white/70">v{{ v.version }}</span>
+                    <span class="text-[10px] text-white/30">{{ v._ts_str }}</span>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/[0.05] text-white/40">{{ v.operation }}</span>
+                    {% if v._sim_to_prev is not none %}
+                    <span class="text-[10px]
+                        {% if v._sim_to_prev < 0.5 %}text-red-400{% elif v._sim_to_prev < 0.8 %}text-amber-400{% else %}text-green-400{% endif %}">
+                        sim {{ "%.3f"|format(v._sim_to_prev) }}
+                    </span>
+                    {% endif %}
+                </div>
+                {% if v.content %}
+                <div class="text-xs font-mono text-slate-400 bg-white/[0.02] rounded px-3 py-2 border border-white/[0.04] mt-1 max-h-24 overflow-hidden">
+                    {{ v.content[:200] }}{% if v.content|length > 200 %}…{% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<div class="py-8 text-center text-white/30 text-sm">No version history available.</div>
+{% endif %}
