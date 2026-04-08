@@ -1,0 +1,42 @@
+<div class="overflow-x-auto">
+<table class="w-full border-collapse">
+    <thead>
+        <tr class="border-b border-white/[0.08] text-left text-[11px] uppercase tracking-wider text-white/35">
+            <th class="px-5 py-2.5">Trace ID</th>
+            <th class="px-3 py-2.5">Operation</th>
+            <th class="px-3 py-2.5">Status</th>
+            <th class="px-3 py-2.5">Duration</th>
+            <th class="px-3 py-2.5">Agent</th>
+            <th class="px-3 py-2.5">Session</th>
+            <th class="px-3 py-2.5">Content</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for span in spans %}
+        <tr class="border-b border-white/[0.04] cursor-pointer hover:bg-white/[0.03] {% if span.status == 'error' %}row-error{% endif %}"
+            onclick="window.location='/traces/{{ span.trace_id }}'">
+            <td class="px-5 py-2.5 font-mono text-xs text-indigo-400">{{ span.trace_id[:12] }}</td>
+            <td class="px-3 py-2.5"><span class="px-2 py-0.5 rounded text-[11px] {{ span._badge }}">{{ span.operation }}</span></td>
+            <td class="px-3 py-2.5 text-xs status-{{ span.status }}">● {{ span.status }}</td>
+            <td class="px-3 py-2.5 font-mono text-xs">{{ "%.1f"|format(span.duration_ms) }}ms</td>
+            <td class="px-3 py-2.5 text-xs">{{ span.agent_id or '-' }}</td>
+            <td class="px-3 py-2.5 font-mono text-[11px] text-white/40">{{ span.session_id or '-' }}</td>
+            <td class="px-3 py-2.5 text-xs text-white/50 max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">{{ (span.input_content or '')[:60] }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+<div class="flex justify-between items-center px-5 py-2.5 border-t border-white/[0.06] text-[11px] text-white/30">
+    <span>Showing {{ offset + 1 }}-{{ [offset + limit, total]|min }} of {{ total }}</span>
+    <div class="flex gap-2">
+        {% if offset > 0 %}
+        <span class="px-2.5 py-1 rounded bg-white/[0.05] cursor-pointer"
+              hx-get="/api/traces?offset={{ offset - limit }}&limit={{ limit }}" hx-target="#trace-table" hx-include="[name]">← Prev</span>
+        {% endif %}
+        {% if offset + limit < total %}
+        <span class="px-2.5 py-1 rounded bg-indigo-500/20 text-indigo-400 cursor-pointer"
+              hx-get="/api/traces?offset={{ offset + limit }}&limit={{ limit }}" hx-target="#trace-table" hx-include="[name]">Next →</span>
+        {% endif %}
+    </div>
+</div>

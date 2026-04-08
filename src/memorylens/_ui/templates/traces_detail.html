@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Trace Detail — MemoryLens{% endblock %}
+{% block content %}
+<div class="px-6 py-4">
+    <p>Trace detail placeholder — {{ span.trace_id }}</p>
+    <p>Operation: {{ span.operation }}</p>
+    <p>Status: {{ span.status }}</p>
+</div>
+{% endblock %}

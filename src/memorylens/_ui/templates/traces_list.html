@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Traces — MemoryLens{% endblock %}
+{% block content %}
+<div class="px-5 py-3 border-b border-white/[0.06] flex gap-2 flex-wrap items-center">
+    <input type="text" name="q" placeholder="Search content..."
+        class="px-3 py-1.5 rounded-md border border-white/[0.12] bg-white/[0.05] text-slate-200 text-xs w-48 outline-none focus:border-indigo-400/50"
+        hx-get="/api/traces" hx-trigger="keyup changed delay:300ms" hx-target="#trace-table" hx-include="[name]">
+    <select name="operation"
+        class="px-2.5 py-1.5 rounded-md border border-white/[0.12] bg-white/[0.05] text-slate-200 text-xs"
+        hx-get="/api/traces" hx-trigger="change" hx-target="#trace-table" hx-include="[name]">
+        <option value="">All Operations</option>
+        <option value="memory.write">memory.write</option>
+        <option value="memory.read">memory.read</option>
+        <option value="memory.compress">memory.compress</option>
+        <option value="memory.update">memory.update</option>
+    </select>
+    <select name="status"
+        class="px-2.5 py-1.5 rounded-md border border-white/[0.12] bg-white/[0.05] text-slate-200 text-xs"
+        hx-get="/api/traces" hx-trigger="change" hx-target="#trace-table" hx-include="[name]">
+        <option value="">All Statuses</option>
+        <option value="ok">ok</option>
+        <option value="error">error</option>
+        <option value="dropped">dropped</option>
+    </select>
+    <input type="text" name="agent_id" placeholder="Agent ID"
+        class="px-3 py-1.5 rounded-md border border-white/[0.12] bg-white/[0.05] text-slate-200 text-xs w-28 outline-none"
+        hx-get="/api/traces" hx-trigger="keyup changed delay:300ms" hx-target="#trace-table" hx-include="[name]">
+    <div class="ml-auto text-[11px] text-white/30">{{ total }} traces</div>
+</div>
+<div id="trace-table">
+    {% include "partials/trace_table.html" %}
+</div>
+{% endblock %}
