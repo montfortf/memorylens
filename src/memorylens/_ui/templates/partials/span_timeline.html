@@ -1,6 +1,21 @@
 <div class="mb-5">
     <div class="text-[11px] uppercase tracking-wider text-white/30 mb-2.5">Span Timeline</div>
-    <div class="bg-white/[0.03] rounded-md border border-white/[0.06] p-4 text-xs text-white/40">
-        Timeline placeholder
+    <div class="bg-white/[0.03] rounded-md border border-white/[0.06] p-4">
+        <div class="flex justify-between text-[10px] text-white/25 mb-2">
+            <span>0ms</span>
+            <span>{{ "%.0f"|format(span.duration_ms / 4) }}ms</span>
+            <span>{{ "%.0f"|format(span.duration_ms / 2) }}ms</span>
+            <span>{{ "%.0f"|format(span.duration_ms * 3 / 4) }}ms</span>
+            <span>{{ "%.1f"|format(span.duration_ms) }}ms</span>
+        </div>
+        <div class="relative h-7 bg-white/[0.02] rounded overflow-hidden">
+            <div class="absolute left-0 top-1 h-5 w-full rounded-sm flex items-center pl-2 text-[11px] text-indigo-200
+                {% if span.operation == 'memory.write' %}bg-indigo-500/40
+                {% elif span.operation == 'memory.read' %}bg-emerald-500/40
+                {% elif span.operation == 'memory.compress' %}bg-amber-500/40
+                {% else %}bg-purple-500/40{% endif %}">
+                {{ span.operation }} — {{ "%.1f"|format(span.duration_ms) }}ms
+            </div>
+        </div>
     </div>
 </div>

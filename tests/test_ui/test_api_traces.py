@@ -91,3 +91,62 @@ class TestTraceListAPI:
         resp = client.get("/api/traces?status=error", headers={"HX-Request": "true"})
         assert resp.status_code == 200
         assert "error" in resp.text
+
+
+class TestTraceDetailPage:
+    def test_detail_returns_html(self, tmp_path):
+        client = _create_seeded_client(tmp_path)
+        resp = client.get("/traces/t1")
+        assert resp.status_code == 200
+        assert "text/html" in resp.headers["content-type"]
+        assert "memory.write" in resp.text
+
+    def test_detail_shows_attributes(self, tmp_path):
+        client = _create_seeded_client(tmp_path)
+        resp = client.get("/traces/t1")
+        assert "backend" in resp.text
+
+    def test_detail_not_found(self, tmp_path):
+        client = _create_seeded_client(tmp_path)
+        resp = client.get("/traces/nonexistent")
+        assert resp.status_code == 404
+
+    def test_detail_shows_read_retrieval_link(self, tmp_path):
+        client = _create_seeded_client(tmp_path)
+        resp = client.get("/traces/t2")
+        assert "Debug Retrieval" in resp.text
+
+    def test_detail_hides_retrieval_link_for_write(self, tmp_path):
+        client = _create_seeded_client(tmp_path)
+        resp = client.get("/traces/t1")
+        assert "Debug Retrieval" not in resp.text
+
+
+class TestRetrievalDebugger:
+    def test_retrieval_page_returns_html(self, tmp_path):
+        client = _create_seeded_client(tmp_path)
+        resp = client.get("/traces/t2/retrieval")
+        assert resp.status_code == 200
+        assert "text/html" in resp.headers["content-type"]
+        assert "Retrieval" in resp.text
+
+    def test_retrieval_shows_scores(self, tmp_path):
+        client = _create_seeded_client(tmp_path)
+        resp = client.get("/traces/t2/retrieval")
+        assert "0.92" in resp.text
+        assert "0.87" in resp.text
+
+    def test_retrieval_shows_threshold(self, tmp_path):
+        client = _create_seeded_client(tmp_path)
+        resp = client.get("/traces/t2/retrieval")
+        assert "0.7" in resp.text
+
+    def test_retrieval_404_for_write_span(self, tmp_path):
+        client = _create_seeded_client(tmp_path)
+        resp = client.get("/traces/t1/retrieval")
+        assert resp.status_code == 404
+
+    def test_retrieval_404_for_missing_trace(self, tmp_path):
+        client = _create_seeded_client(tmp_path)
+        resp = client.get("/traces/nonexistent/retrieval")
+        assert resp.status_code == 404

@@ -1,9 +1,73 @@
 {% extends "base.html" %}
-{% block title %}Trace Detail — MemoryLens{% endblock %}
+{% block title %}Trace {{ span.trace_id[:12] }} — MemoryLens{% endblock %}
 {% block content %}
-<div class="px-6 py-4">
-    <p>Trace detail placeholder — {{ span.trace_id }}</p>
-    <p>Operation: {{ span.operation }}</p>
-    <p>Status: {{ span.status }}</p>
+<div class="px-6 pt-4">
+    <div class="text-[11px] text-white/30 mb-2">
+        <a href="/traces" class="text-indigo-400 hover:text-indigo-300">← Traces</a> / {{ span.trace_id[:12] }}
+    </div>
+    <div class="flex items-center gap-3 mb-1">
+        <h2 class="text-xl font-semibold">Trace {{ span.trace_id[:12] }}</h2>
+        <span class="px-2 py-0.5 rounded text-[11px] {{ span._badge }}">{{ span.operation }}</span>
+        <span class="text-xs status-{{ span.status }}">● {{ span.status }}</span>
+    </div>
+    <div class="text-xs text-white/35">{{ span.agent_id or '-' }} · {{ span.session_id or '-' }} · {{ "%.1f"|format(span.duration_ms) }}ms</div>
+</div>
+
+<div class="grid grid-cols-[1fr_340px] gap-0 px-6 py-4">
+    <div class="pr-5 border-r border-white/[0.06]">
+        {% include "partials/span_timeline.html" %}
+
+        {% if span.input_content %}
+        <div class="mb-4">
+            <div class="text-[11px] uppercase tracking-wider text-white/30 mb-1.5">Input Content</div>
+            <div class="px-4 py-3 bg-white/[0.03] rounded-md border border-white/[0.06] font-mono text-xs leading-relaxed text-slate-300">{{ span.input_content }}</div>
+        </div>
+        {% endif %}
+
+        {% if span.output_content %}
+        <div class="mb-4">
+            <div class="text-[11px] uppercase tracking-wider text-white/30 mb-1.5">Output Content</div>
+            <div class="px-4 py-3 bg-white/[0.03] rounded-md border border-white/[0.06] font-mono text-xs leading-relaxed text-slate-300">{{ span.output_content }}</div>
+        </div>
+        {% endif %}
+
+        {% if span.status == 'error' and span._attrs.get('error.message') %}
+        <div class="mb-4">
+            <div class="text-[11px] uppercase tracking-wider text-red-400 mb-1.5">Error</div>
+            <div class="px-4 py-3 bg-red-500/[0.05] rounded-md border border-red-500/20 font-mono text-xs text-red-300">
+                {{ span._attrs.get('error.type', 'Error') }}: {{ span._attrs.get('error.message', '') }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="pl-5">
+        <div class="text-[11px] uppercase tracking-wider text-white/30 mb-2.5">Attributes</div>
+        <div class="bg-white/[0.03] rounded-md border border-white/[0.06] overflow-hidden">
+            <table class="w-full border-collapse text-xs">
+                <tr class="border-b border-white/[0.04]"><td class="px-3 py-2 text-white/40">span_id</td><td class="px-3 py-2 font-mono">{{ span.span_id }}</td></tr>
+                <tr class="border-b border-white/[0.04]"><td class="px-3 py-2 text-white/40">trace_id</td><td class="px-3 py-2 font-mono">{{ span.trace_id }}</td></tr>
+                <tr class="border-b border-white/[0.04]"><td class="px-3 py-2 text-white/40">operation</td><td class="px-3 py-2"><span class="px-2 py-0.5 rounded text-[11px] {{ span._badge }}">{{ span.operation }}</span></td></tr>
+                <tr class="border-b border-white/[0.04]"><td class="px-3 py-2 text-white/40">status</td><td class="px-3 py-2 status-{{ span.status }}">{{ span.status }}</td></tr>
+                <tr class="border-b border-white/[0.04]"><td class="px-3 py-2 text-white/40">duration</td><td class="px-3 py-2 font-mono">{{ "%.1f"|format(span.duration_ms) }}ms</td></tr>
+                <tr class="border-b border-white/[0.04]"><td class="px-3 py-2 text-white/40">agent_id</td><td class="px-3 py-2">{{ span.agent_id or '-' }}</td></tr>
+                <tr class="border-b border-white/[0.04]"><td class="px-3 py-2 text-white/40">session_id</td><td class="px-3 py-2 font-mono text-white/50">{{ span.session_id or '-' }}</td></tr>
+                <tr class="border-b border-white/[0.04]"><td class="px-3 py-2 text-white/40">user_id</td><td class="px-3 py-2">{{ span.user_id or '-' }}</td></tr>
+                {% if span._attrs %}
+                <tr class="border-b border-white/[0.04]"><td colspan="2" class="px-3 py-2 text-[11px] uppercase tracking-wider text-white/25 bg-white/[0.02]">Custom Attributes</td></tr>
+                {% for key, value in span._attrs.items() %}
+                {% if key not in ('error.type', 'error.message') %}
+                <tr class="border-b border-white/[0.04]"><td class="px-3 py-2 text-white/40">{{ key }}</td><td class="px-3 py-2 font-mono">{{ value }}</td></tr>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+            </table>
+        </div>
+        <div class="mt-3 flex gap-2">
+            {% if span.operation == 'memory.read' %}
+            <a href="/traces/{{ span.trace_id }}/retrieval" class="px-3.5 py-1.5 rounded-md bg-indigo-500/15 border border-indigo-500/30 text-xs text-indigo-400 hover:bg-indigo-500/25">Debug Retrieval →</a>
+            {% endif %}
+        </div>
+    </div>
 </div>
 {% endblock %}
