@@ -9,6 +9,7 @@
             <th class="px-3 py-2.5">Agent</th>
             <th class="px-3 py-2.5">Session</th>
             <th class="px-3 py-2.5">Content</th>
+            <th class="px-3 py-2.5">Cost</th>
         </tr>
     </thead>
     <tbody>
@@ -22,6 +23,9 @@
             <td class="px-3 py-2.5 text-xs">{{ span.agent_id or '-' }}</td>
             <td class="px-3 py-2.5 font-mono text-[11px] text-white/40">{{ span.session_id or '-' }}</td>
             <td class="px-3 py-2.5 text-xs text-white/50 max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">{{ (span.input_content or '')[:60] }}</td>
+            <td class="px-3 py-2.5 font-mono text-xs text-emerald-400/70">
+              {% if span._attrs.get('cost_usd') %}${{ "%.4f"|format(span._attrs.cost_usd) }}{% else %}-{% endif %}
+            </td>
         </tr>
     {% endfor %}
     </tbody>

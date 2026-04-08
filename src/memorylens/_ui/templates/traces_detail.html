@@ -10,7 +10,7 @@
         <span class="px-2 py-0.5 rounded text-[11px] {{ span._badge }}">{{ span.operation }}</span>
         <span class="text-xs status-{{ span.status }}">● {{ span.status }}</span>
     </div>
-    <div class="text-xs text-white/35">{{ span.agent_id or '-' }} · {{ span.session_id or '-' }} · {{ "%.1f"|format(span.duration_ms) }}ms</div>
+    <div class="text-xs text-white/35">{{ span.agent_id or '-' }} · {{ span.session_id or '-' }} · {{ "%.1f"|format(span.duration_ms) }}ms{% if span._attrs.get('cost_usd') %} · ${{ "%.4f"|format(span._attrs.cost_usd) }}{% endif %}</div>
 </div>
 
 <div class="grid grid-cols-[1fr_340px] gap-0 px-6 py-4">
