@@ -124,5 +124,52 @@ class SQLiteExporter:
         cursor = self._conn.execute(sql, params)
         return [dict(row) for row in cursor.fetchall()]
 
+    def query_extended(
+        self,
+        trace_id: str | None = None,
+        operation: str | None = None,
+        status: str | None = None,
+        agent_id: str | None = None,
+        session_id: str | None = None,
+        q: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[list[dict[str, Any]], int]:
+        """Query spans with full-text search, pagination, and total count."""
+        conditions: list[str] = []
+        params: list[Any] = []
+
+        if trace_id:
+            conditions.append("trace_id = ?")
+            params.append(trace_id)
+        if operation:
+            conditions.append("operation = ?")
+            params.append(operation)
+        if status:
+            conditions.append("status = ?")
+            params.append(status)
+        if agent_id:
+            conditions.append("agent_id = ?")
+            params.append(agent_id)
+        if session_id:
+            conditions.append("session_id = ?")
+            params.append(session_id)
+        if q:
+            conditions.append("(input_content LIKE ? OR output_content LIKE ?)")
+            q_param = f"%{q}%"
+            params.extend([q_param, q_param])
+
+        where = " AND ".join(conditions) if conditions else "1=1"
+
+        count_sql = f"SELECT COUNT(*) FROM spans WHERE {where}"
+        total = self._conn.execute(count_sql, params).fetchone()[0]
+
+        sql = f"SELECT * FROM spans WHERE {where} ORDER BY start_time DESC LIMIT ? OFFSET ?"
+        row_params = params + [limit, offset]
+        cursor = self._conn.execute(sql, row_params)
+        rows = [dict(row) for row in cursor.fetchall()]
+
+        return rows, total
+
     def shutdown(self) -> None:
         self._conn.close()
