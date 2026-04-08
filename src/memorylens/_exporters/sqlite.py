@@ -103,6 +103,29 @@ INSERT OR REPLACE INTO drift_reports (
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 """
 
+_CREATE_ALERT_RULES_TABLE = """
+CREATE TABLE IF NOT EXISTS alert_rules (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    alert_type TEXT NOT NULL,
+    threshold REAL NOT NULL,
+    webhook_url TEXT,
+    enabled INTEGER NOT NULL DEFAULT 1,
+    created_at REAL NOT NULL
+)
+"""
+
+_CREATE_ALERT_HISTORY_TABLE = """
+CREATE TABLE IF NOT EXISTS alert_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    rule_id INTEGER NOT NULL,
+    alert_type TEXT NOT NULL,
+    message TEXT NOT NULL,
+    details TEXT NOT NULL,
+    fired_at REAL NOT NULL
+)
+"""
+
 _CREATE_AUDIT_TABLE = """
 CREATE TABLE IF NOT EXISTS compression_audits (
     span_id TEXT PRIMARY KEY,
@@ -286,14 +309,10 @@ class SQLiteExporter:
         row = cursor.fetchone()
         return dict(row) if row else None
 
-    def list_audits(
-        self, limit: int = 50, offset: int = 0
-    ) -> tuple[list[dict[str, Any]], int]:
+    def list_audits(self, limit: int = 50, offset: int = 0) -> tuple[list[dict[str, Any]], int]:
         """List all audits with pagination. Returns (rows, total_count)."""
         self._ensure_audit_table()
-        total = self._conn.execute(
-            "SELECT COUNT(*) FROM compression_audits"
-        ).fetchone()[0]
+        total = self._conn.execute("SELECT COUNT(*) FROM compression_audits").fetchone()[0]
         cursor = self._conn.execute(
             "SELECT * FROM compression_audits ORDER BY created_at DESC LIMIT ? OFFSET ?",
             (limit, offset),
@@ -303,9 +322,7 @@ class SQLiteExporter:
 
     def update_span_attributes(self, span_id: str, new_attrs: dict[str, Any]) -> None:
         """Merge new_attrs into existing span attributes JSON."""
-        cursor = self._conn.execute(
-            "SELECT attributes FROM spans WHERE span_id = ?", (span_id,)
-        )
+        cursor = self._conn.execute("SELECT attributes FROM spans WHERE span_id = ?", (span_id,))
         row = cursor.fetchone()
         if row is None:
             return
@@ -459,10 +476,7 @@ class SQLiteExporter:
         count_sql = f"SELECT COUNT(*) FROM drift_reports WHERE {where}"
         total = self._conn.execute(count_sql, params).fetchone()[0]
 
-        sql = (
-            f"SELECT * FROM drift_reports WHERE {where} "
-            "ORDER BY created_at DESC LIMIT ? OFFSET ?"
-        )
+        sql = f"SELECT * FROM drift_reports WHERE {where} ORDER BY created_at DESC LIMIT ? OFFSET ?"
         row_params = params + [limit, offset]
         cursor = self._conn.execute(sql, row_params)
         rows = [dict(row) for row in cursor.fetchall()]
@@ -470,6 +484,140 @@ class SQLiteExporter:
             if isinstance(row.get("details"), str):
                 row["details"] = json.loads(row["details"])
         return rows, total
+
+    # ── Alert rule methods ───────────────────────────────────────────────────
+
+    def _ensure_alert_rules_table(self) -> None:
+        """Create alert_rules table if it doesn't exist."""
+        self._conn.execute(_CREATE_ALERT_RULES_TABLE)
+        self._conn.commit()
+
+    def _ensure_alert_history_table(self) -> None:
+        """Create alert_history table if it doesn't exist."""
+        self._conn.execute(_CREATE_ALERT_HISTORY_TABLE)
+        self._conn.commit()
+
+    def save_alert_rule(self, rule: dict) -> None:
+        """Save (insert) an alert rule. Creates table if needed."""
+        import time
+
+        self._ensure_alert_rules_table()
+        self._conn.execute(
+            """
+            INSERT INTO alert_rules (name, alert_type, threshold, webhook_url, enabled, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                rule["name"],
+                rule["alert_type"],
+                rule["threshold"],
+                rule.get("webhook_url"),
+                1 if rule.get("enabled", True) else 0,
+                rule.get("created_at", time.time()),
+            ),
+        )
+        self._conn.commit()
+
+    def get_alert_rule(self, name: str) -> dict | None:
+        """Get an alert rule by name, or None if not found."""
+        try:
+            self._ensure_alert_rules_table()
+        except Exception:
+            return None
+        cursor = self._conn.execute(
+            "SELECT * FROM alert_rules WHERE name = ?", (name,)
+        )
+        row = cursor.fetchone()
+        return dict(row) if row else None
+
+    def list_alert_rules(self, enabled_only: bool = False) -> list[dict]:
+        """List all alert rules, optionally only enabled ones."""
+        self._ensure_alert_rules_table()
+        if enabled_only:
+            cursor = self._conn.execute(
+                "SELECT * FROM alert_rules WHERE enabled = 1 ORDER BY created_at ASC"
+            )
+        else:
+            cursor = self._conn.execute(
+                "SELECT * FROM alert_rules ORDER BY created_at ASC"
+            )
+        return [dict(row) for row in cursor.fetchall()]
+
+    def delete_alert_rule(self, name: str) -> None:
+        """Delete an alert rule by name."""
+        self._ensure_alert_rules_table()
+        self._conn.execute("DELETE FROM alert_rules WHERE name = ?", (name,))
+        self._conn.commit()
+
+    def update_alert_rule(self, name: str, updates: dict) -> None:
+        """Update fields on an existing alert rule."""
+        self._ensure_alert_rules_table()
+        allowed = {"alert_type", "threshold", "webhook_url", "enabled"}
+        fields = {k: v for k, v in updates.items() if k in allowed}
+        if not fields:
+            return
+        set_clause = ", ".join(f"{k} = ?" for k in fields)
+        values = list(fields.values()) + [name]
+        self._conn.execute(
+            f"UPDATE alert_rules SET {set_clause} WHERE name = ?", values
+        )
+        self._conn.commit()
+
+    # ── Alert history methods ────────────────────────────────────────────────
+
+    def save_alert_event(self, event: dict) -> None:
+        """Save an alert event to history. Creates table if needed."""
+        import time
+
+        self._ensure_alert_history_table()
+        self._conn.execute(
+            """
+            INSERT INTO alert_history (rule_id, alert_type, message, details, fired_at)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                event["rule_id"],
+                event["alert_type"],
+                event["message"],
+                json.dumps(event.get("details", {})),
+                event.get("fired_at", time.time()),
+            ),
+        )
+        self._conn.commit()
+
+    def list_alert_history(
+        self, alert_type: str | None = None, limit: int = 50
+    ) -> list[dict]:
+        """List recent alert history, optionally filtered by type."""
+        self._ensure_alert_history_table()
+        if alert_type:
+            cursor = self._conn.execute(
+                "SELECT * FROM alert_history WHERE alert_type = ? ORDER BY fired_at DESC LIMIT ?",
+                (alert_type, limit),
+            )
+        else:
+            cursor = self._conn.execute(
+                "SELECT * FROM alert_history ORDER BY fired_at DESC LIMIT ?",
+                (limit,),
+            )
+        rows = [dict(row) for row in cursor.fetchall()]
+        for row in rows:
+            if isinstance(row.get("details"), str):
+                row["details"] = json.loads(row["details"])
+        return rows
+
+    def get_last_alert_time(self, rule_id: int) -> float | None:
+        """Get the fired_at timestamp of the most recent alert for a rule, or None."""
+        try:
+            self._ensure_alert_history_table()
+        except Exception:
+            return None
+        cursor = self._conn.execute(
+            "SELECT fired_at FROM alert_history WHERE rule_id = ? ORDER BY fired_at DESC LIMIT 1",
+            (rule_id,),
+        )
+        row = cursor.fetchone()
+        return row[0] if row else None
 
     def shutdown(self) -> None:
         self._conn.close()
