@@ -46,6 +46,27 @@ INSERT OR REPLACE INTO spans (
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 """
 
+_CREATE_AUDIT_TABLE = """
+CREATE TABLE IF NOT EXISTS compression_audits (
+    span_id TEXT PRIMARY KEY,
+    semantic_loss_score REAL NOT NULL,
+    compression_ratio REAL NOT NULL,
+    pre_sentence_count INTEGER NOT NULL,
+    post_sentence_count INTEGER NOT NULL,
+    sentences TEXT NOT NULL,
+    scorer_backend TEXT NOT NULL,
+    created_at REAL NOT NULL
+)
+"""
+
+_INSERT_AUDIT = """
+INSERT OR REPLACE INTO compression_audits (
+    span_id, semantic_loss_score, compression_ratio,
+    pre_sentence_count, post_sentence_count,
+    sentences, scorer_backend, created_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+"""
+
 
 class SQLiteExporter:
     """Exports spans to a local SQLite database."""
@@ -169,6 +190,58 @@ class SQLiteExporter:
         cursor = self._conn.execute(sql, row_params)
         rows = [dict(row) for row in cursor.fetchall()]
 
+        return rows, total
+
+    def _ensure_audit_table(self) -> None:
+        """Create the compression_audits table if it doesn't exist."""
+        self._conn.execute(_CREATE_AUDIT_TABLE)
+        self._conn.commit()
+
+    def save_audit(self, audit: Any) -> None:
+        """Save a compression audit result. Creates table if needed."""
+        import time
+
+        self._ensure_audit_table()
+        self._conn.execute(
+            _INSERT_AUDIT,
+            (
+                audit.span_id,
+                audit.semantic_loss_score,
+                audit.compression_ratio,
+                audit.pre_sentence_count,
+                audit.post_sentence_count,
+                json.dumps(audit.to_dict()["sentences"]),
+                audit.scorer_backend,
+                time.time(),
+            ),
+        )
+        self._conn.commit()
+
+    def get_audit(self, span_id: str) -> dict[str, Any] | None:
+        """Get audit result for a span, or None if not audited."""
+        try:
+            self._ensure_audit_table()
+        except Exception:
+            return None
+        cursor = self._conn.execute(
+            "SELECT * FROM compression_audits WHERE span_id = ?", (span_id,)
+        )
+        row = cursor.fetchone()
+        return dict(row) if row else None
+
+    def list_audits(
+        self, limit: int = 50, offset: int = 0
+    ) -> tuple[list[dict[str, Any]], int]:
+        """List all audits with pagination. Returns (rows, total_count)."""
+        self._ensure_audit_table()
+        total = self._conn.execute(
+            "SELECT COUNT(*) FROM compression_audits"
+        ).fetchone()[0]
+        cursor = self._conn.execute(
+            "SELECT * FROM compression_audits ORDER BY created_at DESC LIMIT ? OFFSET ?",
+            (limit, offset),
+        )
+        rows = [dict(row) for row in cursor.fetchall()]
         return rows, total
 
     def shutdown(self) -> None:
