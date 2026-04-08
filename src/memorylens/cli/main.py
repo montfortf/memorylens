@@ -12,6 +12,7 @@ app = typer.Typer(
 
 
 def _register_commands() -> None:
+    from memorylens.cli.commands.alerts import alerts_app
     from memorylens.cli.commands.audit import audit_app
     from memorylens.cli.commands.config import config_app
     from memorylens.cli.commands.cost import cost_app
@@ -25,6 +26,7 @@ def _register_commands() -> None:
     app.add_typer(audit_app, name="audit", help="Compression audit tools")
     app.add_typer(cost_app, name="cost", help="Cost attribution tools")
     app.add_typer(drift_app, name="drift", help="Memory drift detection")
+    app.add_typer(alerts_app, name="alerts", help="Threshold-based alerting")
 
 
 _register_commands()
