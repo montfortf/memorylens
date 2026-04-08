@@ -30,3 +30,7 @@ register_exporter("sqlite", SQLiteExporter)
 from memorylens._exporters.jsonl import JSONLExporter
 
 register_exporter("jsonl", JSONLExporter)
+
+from memorylens._exporters.otlp import OTLPExporter
+
+register_exporter("otlp", OTLPExporter)
