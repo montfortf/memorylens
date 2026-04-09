@@ -1,0 +1,110 @@
+{
+  "title": "MemoryLens \u2014 Operations",
+  "description": "MemoryLens span operations: throughput, latency, error rate, and top agents. Filter by @memorylens.operation and @memorylens.agent_id.",
+  "layout_type": "ordered",
+  "tags": ["memorylens"],
+  "widgets": [
+    {
+      "definition": {
+        "title": "Span Count by Operation",
+        "title_size": "16",
+        "title_align": "left",
+        "type": "toplist",
+        "requests": [
+          {
+            "q": "sum:trace.memorylens.request.hits{*} by {@memorylens.operation}.as_count()",
+            "style": { "palette": "dog_classic" }
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 0, "width": 4, "height": 3 }
+    },
+    {
+      "definition": {
+        "title": "Error Rate Over Time",
+        "title_size": "16",
+        "title_align": "left",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "sum:trace.memorylens.request.errors{*}.as_rate() / sum:trace.memorylens.request.hits{*}.as_rate() * 100",
+            "display_type": "line",
+            "style": { "palette": "warm", "line_type": "solid", "line_width": "normal" }
+          }
+        ],
+        "yaxis": { "min": "0", "max": "100" },
+        "markers": [
+          { "value": "y = 1", "display_type": "warning dashed", "label": "1% threshold" },
+          { "value": "y = 5", "display_type": "error dashed", "label": "5% threshold" }
+        ]
+      },
+      "layout": { "x": 4, "y": 0, "width": 8, "height": 3 }
+    },
+    {
+      "definition": {
+        "title": "Latency P50 / P95 / P99",
+        "title_size": "16",
+        "title_align": "left",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "p50:trace.memorylens.request.duration{*}",
+            "display_type": "line",
+            "style": { "palette": "cool" },
+            "metadata": [{ "expression": "p50:trace.memorylens.request.duration{*}", "alias_name": "P50" }]
+          },
+          {
+            "q": "p95:trace.memorylens.request.duration{*}",
+            "display_type": "line",
+            "style": { "palette": "warm" },
+            "metadata": [{ "expression": "p95:trace.memorylens.request.duration{*}", "alias_name": "P95" }]
+          },
+          {
+            "q": "p99:trace.memorylens.request.duration{*}",
+            "display_type": "line",
+            "style": { "palette": "orange" },
+            "metadata": [{ "expression": "p99:trace.memorylens.request.duration{*}", "alias_name": "P99" }]
+          }
+        ],
+        "yaxis": { "min": "0" }
+      },
+      "layout": { "x": 0, "y": 3, "width": 8, "height": 3 }
+    },
+    {
+      "definition": {
+        "title": "Throughput (Spans per Minute)",
+        "title_size": "16",
+        "title_align": "left",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "sum:trace.memorylens.request.hits{*} by {@memorylens.operation}.as_rate() * 60",
+            "display_type": "bars",
+            "style": { "palette": "dog_classic" }
+          }
+        ]
+      },
+      "layout": { "x": 8, "y": 3, "width": 4, "height": 3 }
+    },
+    {
+      "definition": {
+        "title": "Top Agents by Span Count",
+        "title_size": "16",
+        "title_align": "left",
+        "type": "query_table",
+        "requests": [
+          {
+            "q": "sum:trace.memorylens.request.hits{*} by {@memorylens.agent_id}.as_count()",
+            "alias": "Spans",
+            "limit": 10,
+            "order": "desc",
+            "aggregator": "sum",
+            "cell_display_mode": ["bar"]
+          }
+        ],
+        "has_search_bar": "auto"
+      },
+      "layout": { "x": 0, "y": 6, "width": 12, "height": 4 }
+    }
+  ]
+}

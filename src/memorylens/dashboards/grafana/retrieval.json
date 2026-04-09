@@ -1,0 +1,160 @@
+{
+  "title": "MemoryLens \u2014 Retrieval",
+  "uid": "memorylens-retrieval",
+  "tags": ["memorylens"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Score Distribution",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "memorylens_retrieval_score_bucket{service_name=\"memorylens\", memorylens_operation=\"memory.read\"}",
+          "legendFormat": "Score",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 80,
+            "lineWidth": 1
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "bucketSize": "auto",
+        "fillOpacity": 80,
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Hit / Miss Ratio",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(traces_spanmetrics_calls_total{service_name=\"memorylens\", memorylens_operation=\"memory.read\", memorylens_threshold_hit=\"true\"})",
+          "legendFormat": "Above Threshold (Hit)",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(traces_spanmetrics_calls_total{service_name=\"memorylens\", memorylens_operation=\"memory.read\", memorylens_threshold_hit=\"false\"})",
+          "legendFormat": "Below Threshold (Miss)",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Above Threshold (Hit)" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Below Threshold (Miss)" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "options": {
+        "pieType": "pie",
+        "tooltip": { "mode": "single" },
+        "legend": { "displayMode": "list", "placement": "right" }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Low-Score Queries",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "topk(20, min by (memorylens_agent_id, memorylens_memory_key) (memorylens_retrieval_min_score{service_name=\"memorylens\", memorylens_operation=\"memory.read\"}))",
+          "legendFormat": "{{memorylens_agent_id}} / {{memorylens_memory_key}}",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "green", "value": 0.8 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "memorylens_agent_id" },
+            "properties": [{ "id": "displayName", "value": "Agent ID" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "memorylens_memory_key" },
+            "properties": [{ "id": "displayName", "value": "Memory Key" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Value" },
+            "properties": [{ "id": "displayName", "value": "Min Score" }]
+          }
+        ]
+      },
+      "options": {
+        "sortBy": [{ "displayName": "Min Score", "desc": false }]
+      }
+    },
+    {
+      "id": 4,
+      "title": "Avg Retrieval Score by Agent",
+      "type": "bargauge",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "avg by (memorylens_agent_id) (memorylens_retrieval_avg_score{service_name=\"memorylens\", memorylens_operation=\"memory.read\"})",
+          "legendFormat": "{{memorylens_agent_id}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "green", "value": 0.8 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "horizontal",
+        "displayMode": "gradient"
+      }
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "title": "MemoryLens \u2014 Retrieval",
+  "description": "MemoryLens memory retrieval quality: score distributions, hit/miss ratios, low-score queries, and per-agent averages. Filters on @memorylens.operation:memory.read.",
+  "layout_type": "ordered",
+  "tags": ["memorylens"],
+  "widgets": [
+    {
+      "definition": {
+        "title": "Score Distribution",
+        "title_size": "16",
+        "title_align": "left",
+        "type": "distribution",
+        "requests": [
+          {
+            "q": "avg:memorylens.retrieval.score{@memorylens.operation:memory.read} by {@memorylens.agent_id}",
+            "style": { "palette": "cool" }
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 0, "width": 6, "height": 3 }
+    },
+    {
+      "definition": {
+        "title": "Hit / Miss Ratio",
+        "title_size": "16",
+        "title_align": "left",
+        "type": "query_value",
+        "requests": [
+          {
+            "q": "sum:trace.memorylens.request.hits{@memorylens.operation:memory.read,@memorylens.threshold_hit:true}.as_count() / sum:trace.memorylens.request.hits{@memorylens.operation:memory.read}.as_count() * 100",
+            "aggregator": "last",
+            "conditional_formats": [
+              { "comparator": ">", "value": 80, "palette": "white_on_green" },
+              { "comparator": ">", "value": 60, "palette": "white_on_yellow" },
+              { "comparator": "<=", "value": 60, "palette": "white_on_red" }
+            ]
+          }
+        ],
+        "autoscale": true,
+        "custom_unit": "%",
+        "precision": 1,
+        "text_align": "center"
+      },
+      "layout": { "x": 6, "y": 0, "width": 3, "height": 3 }
+    },
+    {
+      "definition": {
+        "title": "Avg Score by Agent",
+        "title_size": "16",
+        "title_align": "left",
+        "type": "toplist",
+        "requests": [
+          {
+            "q": "avg:memorylens.retrieval.score{@memorylens.operation:memory.read} by {@memorylens.agent_id}",
+            "style": { "palette": "cool" }
+          }
+        ]
+      },
+      "layout": { "x": 9, "y": 0, "width": 3, "height": 3 }
+    },
+    {
+      "definition": {
+        "title": "Low-Score Queries",
+        "title_size": "16",
+        "title_align": "left",
+        "type": "query_table",
+        "requests": [
+          {
+            "q": "min:memorylens.retrieval.min_score{@memorylens.operation:memory.read} by {@memorylens.agent_id,@memorylens.memory_key}",
+            "alias": "Min Score",
+            "limit": 20,
+            "order": "asc",
+            "aggregator": "min",
+            "cell_display_mode": ["bar"],
+            "conditional_formats": [
+              { "comparator": "<", "value": 0.5, "palette": "white_on_red" },
+              { "comparator": "<", "value": 0.8, "palette": "white_on_yellow" },
+              { "comparator": ">=", "value": 0.8, "palette": "white_on_green" }
+            ]
+          }
+        ],
+        "has_search_bar": "auto"
+      },
+      "layout": { "x": 0, "y": 3, "width": 12, "height": 4 }
+    }
+  ]
+}
