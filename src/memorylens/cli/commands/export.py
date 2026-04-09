@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
-from typing import Optional
 
 import typer
 
@@ -15,7 +13,7 @@ export_app = typer.Typer(no_args_is_help=True)
 def export_dashboard(
     format: str = typer.Option(..., "--format", help="Platform: grafana or datadog"),
     output: str = typer.Option("./dashboards", "--output", "-o", help="Output directory"),
-    name: Optional[str] = typer.Option(None, "--name", help="Export specific dashboard only"),
+    name: str | None = typer.Option(None, "--name", help="Export specific dashboard only"),
 ) -> None:
     """Export pre-built dashboard configurations."""
     from memorylens.dashboards import export_dashboards, list_dashboards
