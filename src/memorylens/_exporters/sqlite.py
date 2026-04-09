@@ -138,6 +138,18 @@ CREATE TABLE IF NOT EXISTS api_keys (
 )
 """
 
+_CREATE_SHARED_LINKS_TABLE = """
+CREATE TABLE IF NOT EXISTS shared_links (
+    id TEXT PRIMARY KEY,
+    link_type TEXT NOT NULL,
+    target TEXT NOT NULL,
+    query_params TEXT,
+    created_by TEXT NOT NULL,
+    created_at REAL NOT NULL,
+    expires_at REAL
+)
+"""
+
 _CREATE_AUDIT_TABLE = """
 CREATE TABLE IF NOT EXISTS compression_audits (
     span_id TEXT PRIMARY KEY,
@@ -702,6 +714,64 @@ class SQLiteExporter:
             return False
         count = self._conn.execute("SELECT COUNT(*) FROM api_keys").fetchone()[0]
         return count > 0
+
+    # ── Shared link methods ──────────────────────────────────────────────────
+
+    def _ensure_shared_links_table(self) -> None:
+        """Create shared_links table if it doesn't exist."""
+        self._conn.execute(_CREATE_SHARED_LINKS_TABLE)
+        self._conn.commit()
+
+    def save_shared_link(self, link: dict) -> None:
+        """Save a shared link record. Creates table if needed."""
+        import json
+
+        self._ensure_shared_links_table()
+        query_params = link.get("query_params")
+        if isinstance(query_params, dict):
+            query_params = json.dumps(query_params)
+        self._conn.execute(
+            """
+            INSERT INTO shared_links (id, link_type, target, query_params, created_by, created_at, expires_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                link["id"],
+                link["link_type"],
+                link["target"],
+                query_params,
+                link["created_by"],
+                link["created_at"],
+                link.get("expires_at"),
+            ),
+        )
+        self._conn.commit()
+
+    def get_shared_link(self, link_id: str) -> dict | None:
+        """Get a shared link by ID, or None if not found."""
+        try:
+            self._ensure_shared_links_table()
+        except Exception:
+            return None
+        cursor = self._conn.execute(
+            "SELECT * FROM shared_links WHERE id = ?", (link_id,)
+        )
+        row = cursor.fetchone()
+        return dict(row) if row else None
+
+    def list_shared_links(self) -> list[dict]:
+        """List all shared links ordered by creation time."""
+        self._ensure_shared_links_table()
+        cursor = self._conn.execute(
+            "SELECT * FROM shared_links ORDER BY created_at DESC"
+        )
+        return [dict(row) for row in cursor.fetchall()]
+
+    def delete_shared_link(self, link_id: str) -> None:
+        """Delete a shared link by ID."""
+        self._ensure_shared_links_table()
+        self._conn.execute("DELETE FROM shared_links WHERE id = ?", (link_id,))
+        self._conn.commit()
 
     def shutdown(self) -> None:
         self._conn.close()
