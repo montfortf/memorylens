@@ -5,7 +5,11 @@
     <div class="text-[11px] text-white/30 mb-2">
         <a href="/drift" class="text-indigo-400 hover:text-indigo-300">← Drift</a> / {{ memory_key }}
     </div>
-    <h2 class="text-xl font-semibold mb-1 font-mono">{{ memory_key }}</h2>
+    <div class="flex items-center gap-3 mb-1">
+        <h2 class="text-xl font-semibold font-mono">{{ memory_key }}</h2>
+        {% set share_type = "drift" %}{% set share_target = memory_key %}
+        {% include "partials/share_button.html" with context %}
+    </div>
 
     {% if report %}
     <!-- Health Score Header -->

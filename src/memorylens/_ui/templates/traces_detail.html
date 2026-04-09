@@ -78,6 +78,8 @@
             {% if span.operation in ('memory.write', 'memory.update') and span._attrs.get('memory_key') %}
             <a href="/drift/{{ span._attrs.get('memory_key') }}" class="px-3.5 py-1.5 rounded-md bg-rose-500/15 border border-rose-500/30 text-xs text-rose-400 hover:bg-rose-500/25">Drift History →</a>
             {% endif %}
+            {% set share_type = "trace" %}{% set share_target = span.trace_id %}
+            {% include "partials/share_button.html" with context %}
         </div>
     </div>
 </div>

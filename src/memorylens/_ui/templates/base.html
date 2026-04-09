@@ -30,6 +30,7 @@
             <a href="/traces" class="{% if active_nav == 'traces' %}text-indigo-400 border-b-2 border-indigo-400 pb-0.5{% else %}text-white/40 hover:text-white/60{% endif %}">Traces</a>
             <a href="/drift" class="{% if active_nav == 'drift' %}text-indigo-400 border-b-2 border-indigo-400 pb-0.5{% else %}text-white/40 hover:text-white/60{% endif %}">Drift</a>
             <a href="/alerts" class="{% if active_nav == 'alerts' %}text-indigo-400 border-b-2 border-indigo-400 pb-0.5{% else %}text-white/40 hover:text-white/60{% endif %}">Alerts</a>
+            {% if request.state.role == 'admin' %}<a href="/admin" class="{% if active_nav == 'admin' %}text-indigo-400 border-b-2 border-indigo-400 pb-0.5{% else %}text-white/40 hover:text-white/60{% endif %}">Admin</a>{% endif %}
         </div>
     </nav>
     <main>
