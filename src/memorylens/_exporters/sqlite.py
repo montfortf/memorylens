@@ -126,6 +126,18 @@ CREATE TABLE IF NOT EXISTS alert_history (
 )
 """
 
+_CREATE_API_KEYS_TABLE = """
+CREATE TABLE IF NOT EXISTS api_keys (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    key_hash TEXT NOT NULL UNIQUE,
+    key_prefix TEXT NOT NULL,
+    name TEXT NOT NULL,
+    role TEXT NOT NULL,
+    created_at REAL NOT NULL,
+    last_used_at REAL
+)
+"""
+
 _CREATE_AUDIT_TABLE = """
 CREATE TABLE IF NOT EXISTS compression_audits (
     span_id TEXT PRIMARY KEY,
@@ -618,6 +630,78 @@ class SQLiteExporter:
         )
         row = cursor.fetchone()
         return row[0] if row else None
+
+    # ── API key methods ──────────────────────────────────────────────────────
+
+    def _ensure_api_keys_table(self) -> None:
+        """Create api_keys table if it doesn't exist."""
+        self._conn.execute(_CREATE_API_KEYS_TABLE)
+        self._conn.commit()
+
+    def save_api_key(self, key_data: dict) -> None:
+        """Save an API key record. Creates table if needed."""
+        self._ensure_api_keys_table()
+        self._conn.execute(
+            """
+            INSERT INTO api_keys (key_hash, key_prefix, name, role, created_at, last_used_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                key_data["key_hash"],
+                key_data["key_prefix"],
+                key_data["name"],
+                key_data["role"],
+                key_data["created_at"],
+                key_data.get("last_used_at"),
+            ),
+        )
+        self._conn.commit()
+
+    def get_api_key_by_hash(self, key_hash: str) -> dict | None:
+        """Look up an API key by its hash. Returns dict or None."""
+        try:
+            self._ensure_api_keys_table()
+        except Exception:
+            return None
+        cursor = self._conn.execute(
+            "SELECT * FROM api_keys WHERE key_hash = ?", (key_hash,)
+        )
+        row = cursor.fetchone()
+        return dict(row) if row else None
+
+    def list_api_keys(self) -> list[dict]:
+        """List all API keys ordered by creation time."""
+        self._ensure_api_keys_table()
+        cursor = self._conn.execute(
+            "SELECT * FROM api_keys ORDER BY created_at ASC"
+        )
+        return [dict(row) for row in cursor.fetchall()]
+
+    def delete_api_key(self, name: str) -> None:
+        """Delete an API key by name."""
+        self._ensure_api_keys_table()
+        self._conn.execute("DELETE FROM api_keys WHERE name = ?", (name,))
+        self._conn.commit()
+
+    def update_api_key_last_used(self, key_hash: str) -> None:
+        """Update the last_used_at timestamp for a key."""
+        import time
+
+        self._ensure_api_keys_table()
+        self._conn.execute(
+            "UPDATE api_keys SET last_used_at = ? WHERE key_hash = ?",
+            (time.time(), key_hash),
+        )
+        self._conn.commit()
+
+    def has_any_keys(self) -> bool:
+        """Return True if any API keys exist (auth mode active)."""
+        try:
+            self._ensure_api_keys_table()
+        except Exception:
+            return False
+        count = self._conn.execute("SELECT COUNT(*) FROM api_keys").fetchone()[0]
+        return count > 0
 
     def shutdown(self) -> None:
         self._conn.close()
