@@ -3,11 +3,12 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from memorylens._auth.middleware import AuthMiddleware
 from memorylens._exporters.sqlite import SQLiteExporter
 
 _DEFAULT_DB = os.path.expanduser("~/.memorylens/traces.db")
@@ -26,6 +27,17 @@ def create_app(db_path: str = _DEFAULT_DB, ingest: bool = False) -> FastAPI:
 
     app.state.templates = templates
     app.state.exporter = exporter
+
+    auth = AuthMiddleware(exporter)
+    app.state.auth = auth
+
+    @app.middleware("http")
+    async def auth_middleware(request: Request, call_next):
+        """Set request.state.role for all requests."""
+        role = auth._get_role(request)
+        request.state.role = role or ("admin" if not exporter.has_any_keys() else None)
+        response = await call_next(request)
+        return response
 
     @app.get("/")
     async def index():
