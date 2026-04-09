@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import secrets
 import time
-from typing import Any
 
 
 def create_shared_link(
