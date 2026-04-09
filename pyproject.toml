@@ -41,6 +41,7 @@ ui = [
     "fastapi>=0.110",
     "uvicorn[standard]>=0.29",
     "jinja2>=3.1",
+    "python-multipart>=0.0.9",
 ]
 audit = ["sentence-transformers>=2.0", "numpy>=1.24"]
 dev = [

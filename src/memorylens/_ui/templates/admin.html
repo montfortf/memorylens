@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Admin — MemoryLens{% endblock %}
+{% block content %}
+<div class="px-6 pt-4 pb-2">
+    <h2 class="text-xl font-semibold mb-1">Admin Panel</h2>
+    <p class="text-xs text-white/40 mb-6">Manage API keys and shared links.</p>
+
+    {% if new_key %}
+    <div class="mb-6 px-4 py-3 rounded bg-green-500/10 border border-green-500/20">
+        <p class="text-xs text-green-400 font-semibold mb-1">Key created for "{{ new_key_name }}" — save it now, it won't be shown again:</p>
+        <code class="text-sm text-green-300 font-mono break-all">{{ new_key }}</code>
+    </div>
+    {% endif %}
+
+    <!-- API Keys Section -->
+    <h3 class="text-sm font-semibold mb-3 text-white/70">API Keys</h3>
+
+    {% if keys %}
+    <div class="overflow-x-auto mb-6">
+        <table class="w-full text-xs">
+            <thead>
+                <tr class="border-b border-white/[0.06] text-white/40 text-left">
+                    <th class="pb-2 pr-4">NAME</th>
+                    <th class="pb-2 pr-4">ROLE</th>
+                    <th class="pb-2 pr-4">PREFIX</th>
+                    <th class="pb-2 pr-4">CREATED</th>
+                    <th class="pb-2 pr-4">LAST USED</th>
+                    <th class="pb-2"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for key in keys %}
+                <tr class="border-b border-white/[0.04] hover:bg-white/[0.02]">
+                    <td class="py-2 pr-4 font-mono text-slate-300">{{ key.name }}</td>
+                    <td class="py-2 pr-4">
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold
+                            {% if key.role == 'admin' %}bg-red-500/20 text-red-300
+                            {% elif key.role == 'editor' %}bg-indigo-500/20 text-indigo-300
+                            {% elif key.role == 'viewer' %}bg-green-500/20 text-green-300
+                            {% else %}bg-yellow-500/20 text-yellow-300{% endif %}">
+                            {{ key.role }}
+                        </span>
+                    </td>
+                    <td class="py-2 pr-4 font-mono text-white/40">{{ key.key_prefix }}</td>
+                    <td class="py-2 pr-4 text-white/30">{{ key.created_at | int }}</td>
+                    <td class="py-2 pr-4 text-white/30">
+                        {% if key.last_used_at %}{{ key.last_used_at | int }}{% else %}<span class="text-white/20">never</span>{% endif %}
+                    </td>
+                    <td class="py-2">
+                        <form method="post" action="/admin/revoke-key/{{ key.name }}" onsubmit="return confirm('Revoke key {{ key.name }}?')">
+                            <button type="submit" class="text-[10px] text-red-400/60 hover:text-red-400 transition-colors">revoke</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-xs text-white/30 mb-6">No API keys yet.</p>
+    {% endif %}
+
+    <!-- Create Key Form -->
+    <h3 class="text-sm font-semibold mb-3 text-white/70">Create New Key</h3>
+    <form method="post" action="/admin/create-key" class="flex items-end gap-3 mb-10">
+        <div>
+            <label class="block text-[10px] text-white/40 mb-1">NAME</label>
+            <input
+                name="name"
+                type="text"
+                placeholder="e.g. ci-ingester"
+                required
+                class="px-3 py-1.5 rounded bg-white/5 border border-white/10 text-xs text-white placeholder-white/20 focus:outline-none focus:border-indigo-500/60 w-48"
+            />
+        </div>
+        <div>
+            <label class="block text-[10px] text-white/40 mb-1">ROLE</label>
+            <select
+                name="role"
+                class="px-3 py-1.5 rounded bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-indigo-500/60"
+            >
+                {% for role in roles %}
+                <option value="{{ role }}">{{ role }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button
+            type="submit"
+            class="px-4 py-1.5 rounded bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors"
+        >
+            Create
+        </button>
+    </form>
+
+    <!-- Shared Links Section -->
+    <h3 class="text-sm font-semibold mb-3 text-white/70">Shared Links</h3>
+
+    {% if shared_links %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+            <thead>
+                <tr class="border-b border-white/[0.06] text-white/40 text-left">
+                    <th class="pb-2 pr-4">ID</th>
+                    <th class="pb-2 pr-4">TYPE</th>
+                    <th class="pb-2 pr-4">TARGET</th>
+                    <th class="pb-2 pr-4">CREATED BY</th>
+                    <th class="pb-2 pr-4">EXPIRES</th>
+                    <th class="pb-2"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for link in shared_links %}
+                <tr class="border-b border-white/[0.04] hover:bg-white/[0.02]">
+                    <td class="py-2 pr-4 font-mono text-indigo-300">
+                        <a href="/shared/{{ link.id }}" class="hover:underline">{{ link.id }}</a>
+                    </td>
+                    <td class="py-2 pr-4 text-slate-300">{{ link.link_type }}</td>
+                    <td class="py-2 pr-4 text-white/50 font-mono max-w-[120px] truncate" title="{{ link.target }}">{{ link.target }}</td>
+                    <td class="py-2 pr-4 text-white/40">{{ link.created_by }}</td>
+                    <td class="py-2 pr-4 text-white/30">
+                        {% if link.expires_at %}{{ link.expires_at | int }}{% else %}<span class="text-white/20">never</span>{% endif %}
+                    </td>
+                    <td class="py-2">
+                        <form method="post" action="/admin/delete-link/{{ link.id }}">
+                            <button type="submit" class="text-[10px] text-red-400/60 hover:text-red-400 transition-colors">delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-xs text-white/30">No shared links yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

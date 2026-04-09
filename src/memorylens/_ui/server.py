@@ -47,6 +47,18 @@ def create_app(db_path: str = _DEFAULT_DB, ingest: bool = False) -> FastAPI:
 
     create_alerts_routes(app)
 
+    from memorylens._ui.api.auth import create_auth_routes
+
+    create_auth_routes(app)
+
+    from memorylens._ui.api.admin import create_admin_routes
+
+    create_admin_routes(app)
+
+    from memorylens._ui.api.sharing import create_sharing_routes
+
+    create_sharing_routes(app)
+
     if ingest:
         from memorylens._ui.api.ingest import create_ingest_routes
 
