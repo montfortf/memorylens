@@ -1,0 +1,1 @@
+export { LangChainInstrumentor } from './instrumentor';
