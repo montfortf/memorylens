@@ -27,7 +27,9 @@ def load_pricing(user_path: str | Path | None = None) -> dict[str, dict[str, flo
     return pricing
 
 
-def save_user_pricing(pricing: dict[str, dict[str, float]], user_path: str | Path | None = None) -> None:
+def save_user_pricing(
+    pricing: dict[str, dict[str, float]], user_path: str | Path | None = None
+) -> None:
     """Save user pricing overrides."""
     path = Path(user_path) if user_path else _USER_PRICING_PATH
     path.parent.mkdir(parents=True, exist_ok=True)

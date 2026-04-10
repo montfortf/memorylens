@@ -3,8 +3,6 @@ from __future__ import annotations
 import json
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from memorylens._alerts.webhook import send_webhook
 
 
@@ -46,8 +44,7 @@ class TestSendWebhook:
         assert result is False
 
     def test_returns_false_on_timeout(self):
-        import socket
-        with patch("urllib.request.urlopen", side_effect=socket.timeout("timed out")):
+        with patch("urllib.request.urlopen", side_effect=TimeoutError("timed out")):
             result = send_webhook("https://hooks.example.com/test", {"x": 1})
         assert result is False
 

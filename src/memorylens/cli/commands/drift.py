@@ -71,17 +71,19 @@ def drift_analyze(
         for key, versions in by_key.items():
             versions.sort(key=lambda x: x["version"])
             result = analyzer.analyze_entity(versions)
-            exporter.save_drift_report({
-                "report_type": "entity",
-                "key": result.memory_key,
-                "drift_score": result.drift_score,
-                "contradiction_score": result.contradiction_score,
-                "staleness_score": result.staleness_score,
-                "volatility_score": result.volatility_score,
-                "grade": result.grade,
-                "details": {"version_count": result.version_count},
-                "created_at": time.time(),
-            })
+            exporter.save_drift_report(
+                {
+                    "report_type": "entity",
+                    "key": result.memory_key,
+                    "drift_score": result.drift_score,
+                    "contradiction_score": result.contradiction_score,
+                    "staleness_score": result.staleness_score,
+                    "volatility_score": result.volatility_score,
+                    "grade": result.grade,
+                    "details": {"version_count": result.version_count},
+                    "created_at": time.time(),
+                }
+            )
             entity_results.append(result)
 
         console.print(f"\n[bold]Entity Drift ({len(entity_results)} entities)[/bold]")
@@ -93,17 +95,19 @@ def drift_analyze(
         session_results = []
         for sid in sessions:
             result = analyzer.analyze_session(sid, all_versions)
-            exporter.save_drift_report({
-                "report_type": "session",
-                "key": sid,
-                "drift_score": result.drift_score,
-                "contradiction_score": result.contradiction_score,
-                "staleness_score": result.staleness_score,
-                "volatility_score": result.volatility_score,
-                "grade": result.grade,
-                "details": {"memory_keys_modified": result.memory_keys_modified},
-                "created_at": time.time(),
-            })
+            exporter.save_drift_report(
+                {
+                    "report_type": "session",
+                    "key": sid,
+                    "drift_score": result.drift_score,
+                    "contradiction_score": result.contradiction_score,
+                    "staleness_score": result.staleness_score,
+                    "volatility_score": result.volatility_score,
+                    "grade": result.grade,
+                    "details": {"memory_keys_modified": result.memory_keys_modified},
+                    "created_at": time.time(),
+                }
+            )
             session_results.append(result)
         console.print(f"\n[bold]Session Drift ({len(session_results)} sessions)[/bold]")
 
@@ -111,17 +115,19 @@ def drift_analyze(
     if run_topic:
         topic_results = analyzer.analyze_topics(all_versions)
         for r in topic_results:
-            exporter.save_drift_report({
-                "report_type": "topic",
-                "key": r.topic_id,
-                "drift_score": r.drift_score,
-                "contradiction_score": r.contradiction_score,
-                "staleness_score": r.staleness_score,
-                "volatility_score": r.volatility_score,
-                "grade": r.grade,
-                "details": {"memory_keys": r.memory_keys, "centroid_drift": r.centroid_drift},
-                "created_at": time.time(),
-            })
+            exporter.save_drift_report(
+                {
+                    "report_type": "topic",
+                    "key": r.topic_id,
+                    "drift_score": r.drift_score,
+                    "contradiction_score": r.contradiction_score,
+                    "staleness_score": r.staleness_score,
+                    "volatility_score": r.volatility_score,
+                    "grade": r.grade,
+                    "details": {"memory_keys": r.memory_keys, "centroid_drift": r.centroid_drift},
+                    "created_at": time.time(),
+                }
+            )
         console.print(f"\n[bold]Topic Drift ({len(topic_results)} clusters)[/bold]")
 
     console.print("\nAnalysis complete. Run: memorylens drift report")
@@ -152,7 +158,9 @@ def _print_entity_table(results: list) -> None:
 def drift_report(
     db_path: str = typer.Option(_DEFAULT_DB, "--db-path", help="SQLite database path"),
     type_: str | None = typer.Option(None, "--type", help="Filter by type: entity, session, topic"),
-    grade: str | None = typer.Option(None, "--grade", help="Minimum grade to show (e.g. D shows D,F)"),
+    grade: str | None = typer.Option(
+        None, "--grade", help="Minimum grade to show (e.g. D shows D,F)"
+    ),
     limit: int = typer.Option(50, "--limit", help="Max rows to show"),
     offset: int = typer.Option(0, "--offset", help="Pagination offset"),
 ) -> None:
@@ -276,24 +284,23 @@ def drift_watch(
                 for key, versions in by_key.items():
                     versions.sort(key=lambda x: x["version"])
                     result = analyzer.analyze_entity(versions)
-                    exporter.save_drift_report({
-                        "report_type": "entity",
-                        "key": result.memory_key,
-                        "drift_score": result.drift_score,
-                        "contradiction_score": result.contradiction_score,
-                        "staleness_score": result.staleness_score,
-                        "volatility_score": result.volatility_score,
-                        "grade": result.grade,
-                        "details": {"version_count": result.version_count},
-                        "created_at": time.time(),
-                    })
+                    exporter.save_drift_report(
+                        {
+                            "report_type": "entity",
+                            "key": result.memory_key,
+                            "drift_score": result.drift_score,
+                            "contradiction_score": result.contradiction_score,
+                            "staleness_score": result.staleness_score,
+                            "volatility_score": result.volatility_score,
+                            "grade": result.grade,
+                            "details": {"version_count": result.version_count},
+                            "created_at": time.time(),
+                        }
+                    )
                     if result.grade == "F":
                         critical += 1
 
-                console.print(
-                    f"  {len(by_key)} entities. "
-                    f"[red]{critical} critical[/red]"
-                )
+                console.print(f"  {len(by_key)} entities. [red]{critical} critical[/red]")
             else:
                 console.print("  No versions found.")
             exporter.shutdown()

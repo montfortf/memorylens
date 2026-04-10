@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1a2e;
+    --ink-mid: #3a3a5c;
+    --ink-faint: #7a7a9a;
+    --surface: #f8f7f4;
+    --surface-2: #f0ede8;
+    --surface-3: #e6e2db;
+    --accent: #4a3fa0;
+    --accent-2: #7c6fe0;
+    --accent-pale: #edeafb;
+    --teal: #1a8a72;
+    --teal-pale: #e0f4ef;
+    --amber: #b85e00;
+    --amber-pale: #fdf0e0;
+    --coral: #c94040;
+    --coral-pale: #fde8e8;
+    --green: #2e7d32;
+    --green-pale: #e8f5e9;
+    --border: rgba(26,26,46,0.1);
+    --border-strong: rgba(26,26,46,0.2);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #e8e6f0;
+      --ink-mid: #b8b6cc;
+      --ink-faint: #7a789a;
+      --surface: #14131e;
+      --surface-2: #1e1c2e;
+      --surface-3: #28263a;
+      --accent: #8a7fe8;
+      --accent-2: #a898f0;
+      --accent-pale: #1e1c38;
+      --teal: #4ab89a;
+      --teal-pale: #0f2820;
+      --amber: #e09030;
+      --amber-pale: #281c08;
+      --coral: #e86060;
+      --coral-pale: #2a1010;
+      --green: #66bb6a;
+      --green-pale: #0f2810;
+      --border: rgba(255,255,255,0.08);
+      --border-strong: rgba(255,255,255,0.16);
+    }
+  }
+
+  body {
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    background: var(--surface);
+    color: var(--ink);
+    line-height: 1.6;
+    padding: 0;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 56px 48px 40px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 320px; height: 320px;
+    border-radius: 50%;
+    background: var(--accent-pale);
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 24px; height: 2px;
+    background: var(--accent);
+    border-radius: 1px;
+  }
+  .hero-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 52px;
+    line-height: 1.05;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .hero-sub {
+    font-size: 18px;
+    color: var(--ink-mid);
+    margin-bottom: 32px;
+    max-width: 580px;
+    line-height: 1.5;
+  }
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .meta-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border-strong);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-mid);
+    background: var(--surface-2);
+  }
+  .meta-pill .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+  }
+
+  /* ── CONTENT ── */
+  .content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 48px;
+  }
+
+  .section {
+    margin-bottom: 56px;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h2 {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+
+  p {
+    font-size: 15px;
+    color: var(--ink-mid);
+    margin-bottom: 16px;
+    line-height: 1.7;
+    max-width: 680px;
+  }
+
+  p strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* ── PROBLEM CALLOUT ── */
+  .problem-box {
+    background: var(--coral-pale);
+    border: 1px solid var(--coral);
+    border-left: 3px solid var(--coral);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 24px 0;
+  }
+  .problem-box .pb-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--coral);
+    margin-bottom: 8px;
+  }
+  .problem-box p {
+    color: var(--ink-mid);
+    margin: 0;
+    font-size: 14px;
+  }
+
+  /* ── PIPELINE DIAGRAM ── */
+  .pipeline {
+    margin: 32px 0;
+    position: relative;
+  }
+  .pipeline-stages {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    overflow-x: auto;
+  }
+  .stage {
+    flex: 1;
+    min-width: 120px;
+    position: relative;
+  }
+  .stage-inner {
+    padding: 16px 12px;
+    border: 1px solid var(--border-strong);
+    border-right: none;
+    background: var(--surface-2);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .stage:last-child .stage-inner { border-right: 1px solid var(--border-strong); border-radius: 0 8px 8px 0; }
+  .stage:first-child .stage-inner { border-radius: 8px 0 0 8px; }
+  .stage-icon {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+  .stage-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .stage-desc {
+    font-size: 11px;
+    color: var(--ink-faint);
+    line-height: 1.4;
+  }
+  .stage-arrow {
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    font-size: 10px;
+    color: white;
+  }
+  .stage:last-child .stage-arrow { display: none; }
+
+  /* ── FEATURES GRID ── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .feature-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    background: var(--surface);
+    transition: border-color 0.15s;
+    cursor: pointer;
+  }
+  .feature-card:hover { border-color: var(--accent); }
+  .feature-card.active {
+    border-color: var(--accent);
+    background: var(--accent-pale);
+  }
+  .fc-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .fc-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+  .fc-body {
+    font-size: 12px;
+    color: var(--ink-faint);
+    line-height: 1.5;
+    margin: 0;
+  }
+  .fc-tag {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+  }
+
+  /* ── DETAIL PANEL ── */
+  .detail-panel {
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 24px;
+    background: var(--accent-pale);
+    margin-top: 16px;
+    display: none;
+  }
+  .detail-panel.visible { display: block; }
+  .dp-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 20px;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+  .dp-body { font-size: 13px; color: var(--ink-mid); line-height: 1.6; margin-bottom: 12px; max-width: 100%; }
+  .dp-specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .dp-spec {
+    padding: 4px 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--ink-mid);
+  }
+
+  /* ── ARCH DIAGRAM ── */
+  .arch-diagram {
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+  .arch-layer {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+    gap: 8px;
+  }
+  .arch-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    width: 100px;
+    text-align: right;
+    flex-shrink: 0;
+    letter-spacing: 0.05em;
+  }
+  .arch-boxes {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+  }
+  .arch-box {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    border: 1px solid;
+    line-height: 1.3;
+  }
+  .arch-connector {
+    height: 20px;
+    margin-left: 108px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-left: 4px;
+  }
+  .arch-connector-line {
+    width: 2px;
+    height: 20px;
+    background: var(--border-strong);
+    margin-left: 24px;
+  }
+  .arch-connector-label {
+    font-size: 10px;
+    color: var(--ink-faint);
+    font-family: 'DM Mono', monospace;
+    padding-left: 32px;
+  }
+
+  /* ── USER STORIES ── */
+  .stories-list {
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .story {
+    display: flex;
+    gap: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-2);
+    align-items: flex-start;
+  }
+  .story-persona {
+    font-size: 20px;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-top: 2px;
+  }
+  .story-text {
+    font-size: 13px;
+    color: var(--ink-mid);
+    line-height: 1.6;
+  }
+  .story-text strong { color: var(--ink); font-weight: 500; }
+
+  /* ── MILESTONES ── */
+  .milestones {
+    margin: 24px 0;
+    position: relative;
+  }
+  .milestone {
+    display: flex;
+    gap: 20px;
+    padding: 0 0 24px;
+    position: relative;
+  }
+  .milestone:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 32px;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+  .m-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    background: var(--accent-pale);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent);
+    z-index: 1;
+  }
+  .m-content {}
+  .m-phase {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+  }
+  .m-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .m-items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .m-items li {
+    font-size: 13px;
+    color: var(--ink-faint);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .m-items li::before {
+    content: '';
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* ── METRICS TABLE ── */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .metric-card {
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-2);
+  }
+  .metric-label {
+    font-size: 11px;
+    color: var(--ink-faint);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .metric-value {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 26px;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .metric-context {
+    font-size: 11px;
+    color: var(--ink-faint);
+    line-height: 1.4;
+  }
+
+  /* ── RISK TABLE ── */
+  .risk-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 13px;
+  }
+  .risk-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--border);
+  }
+  .risk-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink-mid);
+    vertical-align: top;
+  }
+  .risk-table tr:last-child td { border-bottom: none; }
+  .risk-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  /* ── QUOTE ── */
+  .quote-block {
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    margin: 24px 0;
+    background: var(--accent-pale);
+    border-radius: 0 8px 8px 0;
+  }
+  .quote-text {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 17px;
+    font-style: italic;
+    color: var(--ink);
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  .quote-attr {
+    font-size: 12px;
+    color: var(--ink-faint);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ── OTEL SECTION ── */
+  .otel-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    margin: 20px 0;
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+  .otel-badge {
+    padding: 8px 14px;
+    background: var(--teal-pale);
+    color: var(--teal);
+    border: 1px solid var(--teal);
+    border-radius: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .otel-body { flex: 1; }
+  .otel-body h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .otel-body p {
+    font-size: 13px;
+    color: var(--ink-faint);
+    margin: 0;
+    max-width: 100%;
+  }
+
+  /* ── FOOTER ── */
+  .doc-footer {
+    padding: 32px 48px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .footer-brand {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 18px;
+    color: var(--ink);
+  }
+  .footer-brand span { color: var(--accent); font-style: italic; }
+  .footer-note {
+    font-size: 12px;
+    color: var(--ink-faint);
+    font-family: 'DM Mono', monospace;
+  }
+
+  @media (max-width: 600px) {
+    .hero { padding: 32px 24px 28px; }
+    .hero-title { font-size: 38px; }
+    .content { padding: 32px 24px; }
+    .features-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+    .pipeline-stages { flex-direction: column; }
+    .stage-inner { border-right: 1px solid var(--border-strong) !important; border-radius: 0 !important; border-bottom: none; }
+    .stage:first-child .stage-inner { border-radius: 8px 8px 0 0 !important; }
+    .stage:last-child .stage-inner { border-radius: 0 0 8px 8px !important; border-bottom: 1px solid var(--border-strong) !important; }
+    .stage-arrow { display: none !important; }
+  }
+</style>
+
+<div class="hero">
+  <div class="hero-eyebrow">Product Requirements Document · v0.1 · DRAFT</div>
+  <div class="hero-title">Memory<em>Lens</em></div>
+  <div class="hero-sub">Observability and debugging toolkit for agent memory pipelines — the DevTools missing from every LLM stack.</div>
+  <div class="hero-meta">
+    <div class="meta-pill"><span class="dot" style="background:#4a3fa0"></span> Effort: Medium</div>
+    <div class="meta-pill"><span class="dot" style="background:#1a8a72"></span> Defensibility: High</div>
+    <div class="meta-pill"><span class="dot" style="background:#b85e00"></span> Horizontal Need</div>
+    <div class="meta-pill"><span class="dot" style="background:#c94040"></span> Gap: No existing solution</div>
+    <div class="meta-pill"><span class="dot" style="background:#2e7d32"></span> OSS + Commercial</div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- 01 Problem -->
+  <div class="section">
+    <div class="section-label">01 — Problem Statement</div>
+    <h2>Memory debugging is effectively impossible today</h2>
+    <p>Agent frameworks have matured rapidly — LangChain, LlamaIndex, AutoGPT, Mem0, Letta, and dozens of others now ship some form of memory. But observability into how those memory systems actually behave remains a complete blind spot.</p>
+    <p>When an agent produces a wrong answer, a developer faces a black box: <strong>was it a retrieval failure?</strong> Did the wrong memories surface? <strong>Was it a storage failure?</strong> Was the relevant information never persisted? <strong>Was it a compression artifact?</strong> Did a crucial detail get dropped during summarization? Or was it a reasoning failure on top of correct memories?</p>
+    <p>There is currently no tool that answers these questions. Developers resort to ad-hoc print statements, manual database inspection, and guesswork. The result: hours of debugging per incident, with no systematic way to prevent recurrence.</p>
+
+    <div class="problem-box">
+      <div class="pb-label">Critical gap identified</div>
+      <p>No existing framework — LangChain, LlamaIndex, Mem0, Letta, MemGPT, or otherwise — ships a memory pipeline observability layer. This is not a niche problem: every agent developer building with long-term or episodic memory faces this pain on every non-trivial debugging session.</p>
+    </div>
+
+    <div class="quote-block">
+      <div class="quote-text">"I spent three days last week figuring out why my agent 'forgot' a user's preference. Turns out it was stored but retrieved with a score just below the threshold — and I had zero visibility into that."</div>
+      <div class="quote-attr">— recurring pattern in developer forums, GitHub issues, Discord servers</div>
+    </div>
+  </div>
+
+  <!-- 02 The Pipeline -->
+  <div class="section">
+    <div class="section-label">02 — The Memory Pipeline</div>
+    <h2>Five stages, zero visibility</h2>
+    <p>Agent memory flows through a sequence of operations, each with failure modes that are currently invisible. MemoryLens instruments every stage.</p>
+    <div class="pipeline">
+      <div class="pipeline-stages">
+        <div class="stage">
+          <div class="stage-inner">
+            <div class="stage-icon">✍</div>
+            <div class="stage-name">Write</div>
+            <div class="stage-desc">What was stored, what was dropped, and why</div>
+          </div>
+          <div class="stage-arrow">›</div>
+        </div>
+        <div class="stage">
+          <div class="stage-inner">
+            <div class="stage-icon">🔍</div>
+            <div class="stage-name">Retrieve</div>
+            <div class="stage-desc">Query, match scores, ranking decisions</div>
+          </div>
+          <div class="stage-arrow">›</div>
+        </div>
+        <div class="stage">
+          <div class="stage-inner">
+            <div class="stage-icon">🗜</div>
+            <div class="stage-name">Compress</div>
+            <div class="stage-desc">What was summarized, what was lost</div>
+          </div>
+          <div class="stage-arrow">›</div>
+        </div>
+        <div class="stage">
+          <div class="stage-inner">
+            <div class="stage-icon">📡</div>
+            <div class="stage-name">Update</div>
+            <div class="stage-desc">Memory drift over time, version history</div>
+          </div>
+          <div class="stage-arrow">›</div>
+        </div>
+        <div class="stage">
+          <div class="stage-inner">
+            <div class="stage-icon">💸</div>
+            <div class="stage-name">Cost</div>
+            <div class="stage-desc">Tokens, embeddings, storage per operation</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 Core Features -->
+  <div class="section">
+    <div class="section-label">03 — Core Features</div>
+    <h2>Six observability capabilities</h2>
+    <p>Click any capability to see detailed specifications and acceptance criteria.</p>
+    <div class="features-grid" id="features-grid">
+
+      <div class="feature-card" data-id="0" onclick="toggleFeature(0)">
+        <div class="fc-number">F-01</div>
+        <div class="fc-title">Write-Path Tracing</div>
+        <div class="fc-body">Full audit trail of every memory write: what was attempted, what was stored, what was dropped, and the policy or filter that caused any rejection.</div>
+        <span class="fc-tag" style="background:var(--accent-pale);color:var(--accent);border:1px solid var(--accent)">Priority: P0</span>
+      </div>
+
+      <div class="feature-card" data-id="1" onclick="toggleFeature(1)">
+        <div class="fc-number">F-02</div>
+        <div class="fc-title">Retrieval Debugger</div>
+        <div class="fc-body">For every retrieval call: the query vector, all candidate memories with similarity scores, the threshold applied, and a ranked diff showing why result X ranked above result Y.</div>
+        <span class="fc-tag" style="background:var(--accent-pale);color:var(--accent);border:1px solid var(--accent)">Priority: P0</span>
+      </div>
+
+      <div class="feature-card" data-id="2" onclick="toggleFeature(2)">
+        <div class="fc-number">F-03</div>
+        <div class="fc-title">Compression Auditor</div>
+        <div class="fc-body">Side-by-side diff of pre- and post-compression memories. Semantic loss scoring. Tracks what information survived summarization and what was discarded.</div>
+        <span class="fc-tag" style="background:var(--teal-pale);color:var(--teal);border:1px solid var(--teal)">Priority: P1</span>
+      </div>
+
+      <div class="feature-card" data-id="3" onclick="toggleFeature(3)">
+        <div class="fc-number">F-04</div>
+        <div class="fc-title">Memory Drift Detection</div>
+        <div class="fc-body">Tracks how stored memories evolve across sessions. Detects semantic drift, contradiction, and staleness. Generates a "memory health" score per entity or topic.</div>
+        <span class="fc-tag" style="background:var(--teal-pale);color:var(--teal);border:1px solid var(--teal)">Priority: P1</span>
+      </div>
+
+      <div class="feature-card" data-id="4" onclick="toggleFeature(4)">
+        <div class="fc-number">F-05</div>
+        <div class="fc-title">Cost Attribution</div>
+        <div class="fc-body">Token and dollar cost per memory operation — writes, reads, embeddings, compressions. Aggregated by agent, user, session, and memory type. Exportable to billing systems.</div>
+        <span class="fc-tag" style="background:var(--amber-pale);color:var(--amber);border:1px solid var(--amber)">Priority: P1</span>
+      </div>
+
+      <div class="feature-card" data-id="5" onclick="toggleFeature(5)">
+        <div class="fc-number">F-06</div>
+        <div class="fc-title">Visual Timeline</div>
+        <div class="fc-body">Interactive scrubber showing the complete state of an agent's memory at any point in time. Replay any session's memory state step-by-step. Critical for post-incident analysis.</div>
+        <span class="fc-tag" style="background:var(--amber-pale);color:var(--amber);border:1px solid var(--amber)">Priority: P2</span>
+      </div>
+
+    </div>
+    <div class="detail-panel" id="detail-panel"></div>
+  </div>
+
+  <!-- 04 Architecture -->
+  <div class="section">
+    <div class="section-label">04 — Architecture</div>
+    <h2>Instrumentation-first design</h2>
+    <p>MemoryLens is built as an <strong>instrumentation layer</strong>, not a memory system replacement. It wraps existing memory backends through lightweight hooks, collects trace data, and exports to standard observability infrastructure.</p>
+
+    <div class="arch-diagram">
+      <div class="arch-layer">
+        <div class="arch-label">Agent layer</div>
+        <div class="arch-boxes">
+          <div class="arch-box" style="background:var(--surface-3);border-color:var(--border-strong);color:var(--ink-mid)">LangChain Agent</div>
+          <div class="arch-box" style="background:var(--surface-3);border-color:var(--border-strong);color:var(--ink-mid)">AutoGPT / Letta</div>
+          <div class="arch-box" style="background:var(--surface-3);border-color:var(--border-strong);color:var(--ink-mid)">Custom Agent</div>
+        </div>
+      </div>
+      <div class="arch-connector">
+        <div class="arch-connector-line"></div>
+        <div class="arch-connector-label">↓ memory read / write calls</div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-label">Hook layer</div>
+        <div class="arch-boxes">
+          <div class="arch-box" style="background:var(--accent-pale);border-color:var(--accent);color:var(--accent);font-family:'DM Mono',monospace;font-size:11px">MemoryLens SDK · Instrumentation Hooks</div>
+        </div>
+      </div>
+      <div class="arch-connector">
+        <div class="arch-connector-line"></div>
+        <div class="arch-connector-label">↓ traces + spans</div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-label">Backends</div>
+        <div class="arch-boxes">
+          <div class="arch-box" style="background:var(--surface-3);border-color:var(--border-strong);color:var(--ink-mid)">Mem0 / Zep</div>
+          <div class="arch-box" style="background:var(--surface-3);border-color:var(--border-strong);color:var(--ink-mid)">Pinecone / Weaviate</div>
+          <div class="arch-box" style="background:var(--surface-3);border-color:var(--border-strong);color:var(--ink-mid)">Redis / Postgres</div>
+        </div>
+      </div>
+      <div class="arch-connector">
+        <div class="arch-connector-line"></div>
+        <div class="arch-connector-label">↓ OTLP export</div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-label">Observability</div>
+        <div class="arch-boxes">
+          <div class="arch-box" style="background:var(--teal-pale);border-color:var(--teal);color:var(--teal);font-family:'DM Mono',monospace;font-size:11px">MemoryLens UI</div>
+          <div class="arch-box" style="background:var(--teal-pale);border-color:var(--teal);color:var(--teal);font-family:'DM Mono',monospace;font-size:11px">Datadog / Honeycomb</div>
+          <div class="arch-box" style="background:var(--teal-pale);border-color:var(--teal);color:var(--teal);font-family:'DM Mono',monospace;font-size:11px">Grafana / Jaeger</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="otel-card">
+      <div class="otel-badge">OpenTelemetry</div>
+      <div class="otel-body">
+        <h3>OTLP-native from day one</h3>
+        <p>All trace data is emitted as standard OpenTelemetry spans and metrics. Developers already using Datadog, Honeycomb, Grafana, or Jaeger see memory traces appear in their existing dashboards without any new infrastructure. The MemoryLens UI is an optional enhancement, not a requirement.</p>
+      </div>
+    </div>
+
+    <p>The SDK exposes four primitives: <strong>@instrument_write</strong>, <strong>@instrument_read</strong>, <strong>@instrument_compress</strong>, and <strong>@instrument_update</strong>. Each produces a structured span with a consistent schema. First-class integrations ship for LangChain Memory, Mem0, Letta, and raw vector store clients. The community can build additional integrations via a published instrumentation spec.</p>
+  </div>
+
+  <!-- 05 User Stories -->
+  <div class="section">
+    <div class="section-label">05 — User Stories</div>
+    <h2>Who uses this and why</h2>
+    <div class="stories-list">
+      <div class="story">
+        <div class="story-persona">🔧</div>
+        <div class="story-text"><strong>As a backend engineer</strong> debugging a customer complaint about their AI assistant "forgetting" a preference, I want to replay the exact retrieval call that occurred during their session so I can see the similarity scores and understand why their preference wasn't returned.</div>
+      </div>
+      <div class="story">
+        <div class="story-persona">📊</div>
+        <div class="story-text"><strong>As a platform engineer</strong> optimizing memory costs at scale, I want per-operation cost attribution broken down by user and memory type so I can identify which agent behaviors are driving the majority of embedding spend.</div>
+      </div>
+      <div class="story">
+        <div class="story-persona">🧪</div>
+        <div class="story-text"><strong>As an ML engineer</strong> evaluating compression strategies, I want to see a semantic diff of what information was preserved vs. lost after summarization, with a loss score, so I can tune my compression prompts with actual evidence.</div>
+      </div>
+      <div class="story">
+        <div class="story-persona">🏗</div>
+        <div class="story-text"><strong>As an agent framework author</strong> (LangChain, Letta, etc.), I want to instrument my memory module with three lines of code so my users get write-path and retrieval traces automatically without any extra setup.</div>
+      </div>
+      <div class="story">
+        <div class="story-persona">📈</div>
+        <div class="story-text"><strong>As a CTO</strong> evaluating whether our memory system degrades over time, I want a drift report showing which entities' stored memories have become contradictory or stale across 1,000+ user sessions.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 06 Success Metrics -->
+  <div class="section">
+    <div class="section-label">06 — Success Metrics</div>
+    <h2>How we measure product-market fit</h2>
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">GitHub Stars (6mo)</div>
+        <div class="metric-value">2k+</div>
+        <div class="metric-context">Proxy for organic developer interest and discoverability</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">SDK Installs (weekly)</div>
+        <div class="metric-value">500+</div>
+        <div class="metric-context">Active projects instrumenting their memory pipelines</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Framework Integrations</div>
+        <div class="metric-value">5+</div>
+        <div class="metric-context">LangChain, Mem0, Letta, LlamaIndex, custom at v1.0</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Mean Debug Time</div>
+        <div class="metric-value">−70%</div>
+        <div class="metric-context">Reduction vs. baseline (measured via user study)</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Cloud MAU (3mo post-launch)</div>
+        <div class="metric-value">200+</div>
+        <div class="metric-context">Teams using the hosted dashboard and trace storage</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Community Contributors</div>
+        <div class="metric-value">20+</div>
+        <div class="metric-context">External integrations and spec implementations</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 07 Roadmap -->
+  <div class="section">
+    <div class="section-label">07 — Phased Roadmap</div>
+    <h2>From instrumentation to intelligence</h2>
+    <div class="milestones">
+      <div class="milestone">
+        <div class="m-dot">α</div>
+        <div class="m-content">
+          <div class="m-phase">Phase 1 · Weeks 1–8 · Alpha</div>
+          <div class="m-title">Core Instrumentation SDK</div>
+          <ul class="m-items">
+            <li>Python SDK with write and retrieval hooks</li>
+            <li>LangChain Memory and Mem0 first-class integrations</li>
+            <li>OTLP trace export (Jaeger / Honeycomb compatible)</li>
+            <li>Write-path trace schema v1 with drop-reason codes</li>
+            <li>CLI tool for local trace inspection</li>
+            <li>Open-source under Apache 2.0</li>
+          </ul>
+        </div>
+      </div>
+      <div class="milestone">
+        <div class="m-dot">β</div>
+        <div class="m-content">
+          <div class="m-phase">Phase 2 · Weeks 9–16 · Beta</div>
+          <div class="m-title">Visual Dashboard + Compression Audit</div>
+          <ul class="m-items">
+            <li>MemoryLens web UI: timeline view + retrieval debugger</li>
+            <li>Compression audit with semantic diff and loss scoring</li>
+            <li>LlamaIndex, Letta, and Zep integrations</li>
+            <li>Cost attribution per operation and session</li>
+            <li>Hosted cloud offering (trace storage + dashboard)</li>
+            <li>Public beta program, 50 design partners</li>
+          </ul>
+        </div>
+      </div>
+      <div class="milestone">
+        <div class="m-dot">1</div>
+        <div class="m-content">
+          <div class="m-phase">Phase 3 · Weeks 17–28 · v1.0</div>
+          <div class="m-title">Drift Detection + Ecosystem</div>
+          <ul class="m-items">
+            <li>Memory drift detection and health scoring</li>
+            <li>Community instrumentation spec (v1) for custom integrations</li>
+            <li>Team features: shared trace views, role-based access</li>
+            <li>Alerting on retrieval degradation, cost spikes, drift anomalies</li>
+            <li>JavaScript/TypeScript SDK parity</li>
+            <li>Datadog / Grafana plugin packages</li>
+          </ul>
+        </div>
+      </div>
+      <div class="milestone">
+        <div class="m-dot">2</div>
+        <div class="m-content">
+          <div class="m-phase">Phase 4 · Post v1.0 · Expansion</div>
+          <div class="m-title">Intelligence Layer</div>
+          <ul class="m-items">
+            <li>Anomaly detection: auto-flag unusual retrieval patterns</li>
+            <li>Memory quality regression testing (CI integration)</li>
+            <li>Cross-session trend analytics for enterprise accounts</li>
+            <li>AI-assisted root cause suggestions for retrieval failures</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 08 Risks -->
+  <div class="section">
+    <div class="section-label">08 — Risks & Mitigations</div>
+    <h2>What could go wrong</h2>
+    <table class="risk-table">
+      <thead>
+        <tr>
+          <th>Risk</th>
+          <th>Severity</th>
+          <th>Likelihood</th>
+          <th>Mitigation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Memory backends add native observability</strong>, commoditizing the core feature</td>
+          <td><span class="risk-badge" style="background:var(--amber-pale);color:var(--amber)">Medium</span></td>
+          <td><span class="risk-badge" style="background:var(--teal-pale);color:var(--teal)">Low</span></td>
+          <td>Focus on cross-framework, cross-backend aggregation — no single backend can replicate the unified view</td>
+        </tr>
+        <tr>
+          <td><strong>Instrumentation overhead</strong> makes production adoption impractical</td>
+          <td><span class="risk-badge" style="background:var(--coral-pale);color:var(--coral)">High</span></td>
+          <td><span class="risk-badge" style="background:var(--amber-pale);color:var(--amber)">Medium</span></td>
+          <td>Async trace collection, sampling modes, and a zero-overhead "off" flag. Benchmark overhead &lt;2ms p99 per operation</td>
+        </tr>
+        <tr>
+          <td><strong>Privacy concerns</strong> — memory traces contain sensitive user data</td>
+          <td><span class="risk-badge" style="background:var(--coral-pale);color:var(--coral)">High</span></td>
+          <td><span class="risk-badge" style="background:var(--amber-pale);color:var(--amber)">Medium</span></td>
+          <td>PII scrubbing hooks, self-hosted mode, SOC 2 roadmap, field-level redaction config</td>
+        </tr>
+        <tr>
+          <td><strong>Framework fragmentation</strong> — too many backends to support well</td>
+          <td><span class="risk-badge" style="background:var(--amber-pale);color:var(--amber)">Medium</span></td>
+          <td><span class="risk-badge" style="background:var(--amber-pale);color:var(--amber)">Medium</span></td>
+          <td>Publish open instrumentation spec early; community builds long-tail integrations; team focuses on top-5 by usage</td>
+        </tr>
+        <tr>
+          <td><strong>Langfuse / Arize expand</strong> into memory-specific observability</td>
+          <td><span class="risk-badge" style="background:var(--amber-pale);color:var(--amber)">Medium</span></td>
+          <td><span class="risk-badge" style="background:var(--amber-pale);color:var(--amber)">Medium</span></td>
+          <td>Depth of memory-specific features (compression audit, drift detection) is hard to replicate in a generic trace tool; move fast on integration depth</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 09 Research -->
+  <div class="section">
+    <div class="section-label">09 — Research Basis</div>
+    <h2>Grounded in published research</h2>
+    <p>The feature set directly maps to failure modes identified in the two foundational papers on agentic memory.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px">
+      <div style="padding:20px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2)">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-faint);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.1em">arxiv 2602.19320</div>
+        <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:8px;line-height:1.3">Anatomy of Agentic Memory</div>
+        <p style="font-size:12px;color:var(--ink-faint);margin:0;max-width:100%">Taxonomizes memory types (episodic, semantic, procedural) and identifies the write/retrieve/compress loop as the primary source of agent degradation. Directly motivates F-01, F-02, and F-03.</p>
+      </div>
+      <div style="padding:20px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2)">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-faint);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.1em">arxiv 2603.07670</div>
+        <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:8px;line-height:1.3">Memory for Autonomous LLM Agents</div>
+        <p style="font-size:12px;color:var(--ink-faint);margin:0;max-width:100%">Empirically demonstrates memory drift and contradiction accumulation over extended agent runs. Provides the experimental basis for F-04 (Drift Detection) and the Health Score metric.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10 Defensibility -->
+  <div class="section">
+    <div class="section-label">10 — Defensibility & Moat</div>
+    <h2>Why this compounds over time</h2>
+    <p>MemoryLens has structural defensibility that generic observability tools cannot replicate:</p>
+    <div class="stories-list">
+      <div class="story">
+        <div class="story-persona">🔗</div>
+        <div class="story-text"><strong>Integration depth creates switching costs.</strong> Once instrumentation hooks are embedded in a team's memory layer and their debugging workflows are built around MemoryLens traces, migration cost is high. This is similar to how DataDog becomes load-bearing once RUM and APM are wired in.</div>
+      </div>
+      <div class="story">
+        <div class="story-persona">📚</div>
+        <div class="story-text"><strong>Trace data compounds.</strong> The longer MemoryLens runs in production, the more valuable the drift and anomaly baselines become. Historical trace data is itself a moat — restarting with a new tool means losing regression history.</div>
+      </div>
+      <div class="story">
+        <div class="story-persona">🌐</div>
+        <div class="story-text"><strong>The open-source core drives distribution.</strong> By open-sourcing the SDK and instrumentation spec, MemoryLens becomes the default instrumentation standard — similar to how OpenTelemetry itself became the default. The commercial offering (cloud traces, team features, alerting) sits naturally on top.</div>
+      </div>
+      <div class="story">
+        <div class="story-persona">🎯</div>
+        <div class="story-text"><strong>Memory-domain specificity is hard to copy.</strong> Features like semantic compression loss scoring, drift detection, and retrieval ranking diffs require deep understanding of how LLM memory actually fails. Generic APM tools lack the domain model to build these well without substantial investment.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="doc-footer">
+  <div class="footer-brand">Memory<span>Lens</span> — PRD v0.1</div>
+  <div class="footer-note">Research basis: arxiv 2602.19320 · arxiv 2603.07670</div>
+</div>
+
+<script>
+const featureDetails = [
+  {
+    title: "F-01: Write-Path Tracing",
+    body: "Every call to a memory write API is intercepted and produces a structured span. The span captures: (1) the raw input — the full text or embedding being written; (2) the normalized/chunked output — what was actually persisted; (3) any memory that was dropped due to deduplication, relevance filtering, or capacity limits; (4) the specific policy or filter that caused each drop, with a typed reason code (e.g. DEDUPE_COSINE_THRESHOLD, CAPACITY_LIMIT_FIFO, RELEVANCE_FILTER_SCORE); (5) the resulting memory ID and storage location; (6) latency and token cost.",
+    specs: ["write_trace schema v1", "Drop reason typed codes", "Raw → stored diff", "Token + embedding cost", "Async collection (non-blocking)", "Sampling rate config"]
+  },
+  {
+    title: "F-02: Retrieval Debugger",
+    body: "The retrieval debugger is the most-requested capability. For every memory retrieval call, MemoryLens captures: (1) the query — raw text and its embedding vector; (2) all candidate memories that were evaluated, each with their cosine similarity score, BM25 score (if applicable), and any re-ranking score; (3) the threshold applied and the specific candidates that fell below it; (4) the final ranked result set with a side-by-side comparison showing why memory A ranked above memory B. A visual diff mode in the UI highlights the semantic distance between adjacent results.",
+    specs: ["Query + embedding capture", "Full candidate list + scores", "Threshold visualization", "A/B rank diff view", "Re-ranker score audit", "Configurable PII scrub"]
+  },
+  {
+    title: "F-03: Compression Auditor",
+    body: "When a summarization or compression step runs (e.g., MemoryGPT-style hierarchical summarization, LangChain ConversationSummaryMemory), the compression auditor captures the full pre-compression text, the post-compression summary, and computes a semantic loss score. The score is derived by comparing the embedding of each sentence in the original to the closest matching semantic content in the summary — any sentence with no near match above a threshold contributes to the loss score. A color-coded diff view shows retained (green), paraphrased (amber), and lost (red) content.",
+    specs: ["Pre/post semantic diff", "Sentence-level loss scoring", "Embedding similarity analysis", "Color-coded diff UI", "Compression ratio tracking", "Configurable loss threshold"]
+  },
+  {
+    title: "F-04: Memory Drift Detection",
+    body: "Over time, stored memories about the same entity (a user, a topic, a project) may become contradictory, stale, or semantically drifted from initial state. The drift detector runs a background job that clusters memories by entity, computes pairwise contradiction scores using an LLM judge, and calculates a drift velocity (how fast a cluster's centroid is moving in embedding space over time). Alerts fire when drift exceeds a configured threshold. A 'Memory Health' score (0–100) is computed per entity per session and tracked over time.",
+    specs: ["Entity clustering", "Contradiction scoring (LLM judge)", "Drift velocity metric", "Health score per entity", "Configurable alert thresholds", "Trend dashboard"]
+  },
+  {
+    title: "F-05: Cost Attribution",
+    body: "Every memory operation is tagged with its token cost, embedding cost (priced per 1K tokens against current model rates), vector DB read/write costs (where APIs expose this), and LLM inference cost for any operations that call a model (e.g., compression, drift detection). Costs roll up by: individual operation, agent session, user ID, memory type (episodic/semantic/etc.), and time window. The cost dashboard exports to CSV and integrates with standard billing webhooks for chargeback.",
+    specs: ["Token + embedding cost", "Per-operation attribution", "User / session rollup", "Real-time cost rate config", "CSV export + webhook", "Budget alert thresholds"]
+  },
+  {
+    title: "F-06: Visual Timeline",
+    body: "The timeline view renders the complete state of an agent's memory store at every point in a session as an interactive scrubber. Developers can drag to any moment and see exactly what was in memory, inspect any individual memory item, and click 'replay from here' to re-run retrieval queries against the historical memory state. Critical for post-incident analysis: given a timestamp from a support ticket, jump directly to the memory state at that moment and diagnose retrieval behavior. Timeline diffs highlight what changed between any two points.",
+    specs: ["Full session replay", "Point-in-time memory state", "Historical retrieval replay", "Timeline diff mode", "Session bookmark + share", "Incident link integration"]
+  }
+];
+
+let activeId = null;
+
+function toggleFeature(id) {
+  const panel = document.getElementById('detail-panel');
+  const cards = document.querySelectorAll('.feature-card');
+
+  if (activeId === id) {
+    panel.classList.remove('visible');
+    cards[id].classList.remove('active');
+    activeId = null;
+    return;
+  }
+
+  cards.forEach(c => c.classList.remove('active'));
+  cards[id].classList.add('active');
+  activeId = id;
+
+  const d = featureDetails[id];
+  panel.innerHTML = `
+    <div class="dp-title">${d.title}</div>
+    <div class="dp-body">${d.body}</div>
+    <div class="dp-specs">${d.specs.map(s => `<span class="dp-spec">${s}</span>`).join('')}</div>
+  `;
+  panel.classList.add('visible');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+</script>

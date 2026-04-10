@@ -9,11 +9,19 @@ from memorylens._exporters.sqlite import SQLiteExporter
 
 def _make_span(span_id: str = "s1", attributes: dict | None = None) -> MemorySpan:
     return MemorySpan(
-        span_id=span_id, trace_id="t1", parent_span_id=None,
-        operation=MemoryOperation.WRITE, status=SpanStatus.OK,
-        start_time=1000.0, end_time=1010.0, duration_ms=10.0,
-        agent_id="bot", session_id="sess-1", user_id="user-1",
-        input_content="data", output_content="stored",
+        span_id=span_id,
+        trace_id="t1",
+        parent_span_id=None,
+        operation=MemoryOperation.WRITE,
+        status=SpanStatus.OK,
+        start_time=1000.0,
+        end_time=1010.0,
+        duration_ms=10.0,
+        agent_id="bot",
+        session_id="sess-1",
+        user_id="user-1",
+        input_content="data",
+        output_content="stored",
         attributes=attributes or {"backend": "test"},
     )
 
@@ -30,7 +38,7 @@ class TestUpdateSpanAttributes:
         attrs = json.loads(rows[0]["attributes"])
         assert attrs["cost_usd"] == 0.0015
         assert attrs["backend"] == "test"  # original preserved
-        assert attrs["tokens_in"] == 100   # original preserved
+        assert attrs["tokens_in"] == 100  # original preserved
         exporter.shutdown()
 
     def test_update_nonexistent_span(self, tmp_path):

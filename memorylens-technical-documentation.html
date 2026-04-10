@@ -1,0 +1,2505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MemoryLens — Technical Documentation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1a2e;
+    --ink-mid: #3a3a5c;
+    --ink-faint: #7a7a9a;
+    --surface: #f8f7f4;
+    --surface-2: #f0ede8;
+    --surface-3: #e6e2db;
+    --accent: #4a3fa0;
+    --accent-2: #7c6fe0;
+    --accent-pale: #edeafb;
+    --teal: #1a8a72;
+    --teal-pale: #e0f4ef;
+    --amber: #b85e00;
+    --amber-pale: #fdf0e0;
+    --coral: #c94040;
+    --coral-pale: #fde8e8;
+    --green: #2e7d32;
+    --green-pale: #e8f5e9;
+    --border: rgba(26,26,46,0.1);
+    --border-strong: rgba(26,26,46,0.2);
+  }
+
+  body {
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    background: var(--surface);
+    color: var(--ink);
+    line-height: 1.6;
+    padding: 0;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 56px 72px 48px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 360px; height: 360px;
+    border-radius: 50%;
+    background: var(--accent-pale);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 24px; height: 2px;
+    background: var(--accent);
+    border-radius: 1px;
+  }
+  .hero-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 54px;
+    line-height: 1.05;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .hero-sub {
+    font-size: 18px;
+    color: var(--ink-mid);
+    margin-bottom: 36px;
+    max-width: 600px;
+    line-height: 1.5;
+  }
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .meta-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border-strong);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-mid);
+    background: var(--surface-2);
+  }
+  .meta-pill .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+  }
+  .dot-green { background: #4caf50; }
+  .dot-blue { background: var(--accent); }
+  .dot-amber { background: var(--amber); }
+
+  /* ── TOC ── */
+  .toc-wrapper {
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 72px;
+  }
+  .toc-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 16px;
+  }
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px 24px;
+  }
+  .toc-item {
+    font-size: 13px;
+    color: var(--ink-mid);
+    padding: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toc-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    font-weight: 500;
+    min-width: 22px;
+  }
+
+  /* ── CONTENT ── */
+  .content {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 56px 72px;
+  }
+
+  .section {
+    margin-bottom: 72px;
+    page-break-inside: avoid;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-num {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  h2 {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 32px;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 20px;
+    line-height: 1.2;
+  }
+
+  h3 {
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-top: 32px;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  h4 {
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-top: 24px;
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 15px;
+    color: var(--ink-mid);
+    margin-bottom: 14px;
+    line-height: 1.75;
+  }
+
+  p strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  ul, ol {
+    margin: 12px 0 16px 20px;
+  }
+  li {
+    font-size: 14px;
+    color: var(--ink-mid);
+    margin-bottom: 6px;
+    line-height: 1.6;
+  }
+  li strong { color: var(--ink); }
+
+  /* ── CODE ── */
+  code {
+    font-family: 'DM Mono', 'Courier New', monospace;
+    font-size: 12.5px;
+    background: var(--surface-3);
+    color: var(--accent);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  pre {
+    background: var(--ink);
+    color: #e8e6f0;
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin: 20px 0;
+    overflow-x: auto;
+    font-family: 'DM Mono', 'Courier New', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+  }
+  pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    font-size: inherit;
+  }
+  .pre-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 6px;
+  }
+
+  /* Syntax highlighting */
+  .kw { color: #a898f0; }
+  .fn { color: #7ad4c8; }
+  .st { color: #90c46e; }
+  .cm { color: #6a6880; font-style: italic; }
+  .nm { color: #e09030; }
+  .tp { color: #f0a070; }
+  .pu { color: #e8e6f0; }
+
+  /* ── TABLES ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 13.5px;
+  }
+  thead {
+    background: var(--surface-3);
+  }
+  th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-strong);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink-mid);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--surface-2); }
+  td code { font-size: 11.5px; }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin: 20px 0;
+  }
+  .callout-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .callout p { font-size: 13.5px; margin: 0; }
+  .callout-info {
+    background: var(--accent-pale);
+    border: 1px solid var(--accent-2);
+    border-left: 3px solid var(--accent);
+  }
+  .callout-info .callout-label { color: var(--accent); }
+  .callout-warn {
+    background: var(--amber-pale);
+    border: 1px solid #e09030;
+    border-left: 3px solid var(--amber);
+  }
+  .callout-warn .callout-label { color: var(--amber); }
+  .callout-success {
+    background: var(--green-pale);
+    border: 1px solid #81c784;
+    border-left: 3px solid var(--green);
+  }
+  .callout-success .callout-label { color: var(--green); }
+
+  /* ── ARCHITECTURE DIAGRAM ── */
+  .arch-diagram {
+    margin: 32px 0;
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    padding: 32px;
+    background: var(--surface-2);
+  }
+  .arch-layer {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: stretch;
+  }
+  .arch-layer-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    width: 64px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .arch-box {
+    flex: 1;
+    border-radius: 8px;
+    padding: 12px 14px;
+    text-align: center;
+    border: 1px solid transparent;
+  }
+  .arch-box-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.3;
+    margin-bottom: 3px;
+  }
+  .arch-box-desc {
+    font-size: 10px;
+    color: var(--ink-faint);
+    line-height: 1.4;
+  }
+  .arch-arrow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 4px 0;
+    padding-left: 72px;
+  }
+  .arch-arrow-line {
+    width: 100%;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .arch-arrow-line::before {
+    content: '';
+    display: block;
+    width: 80%;
+    height: 1px;
+    background: var(--border-strong);
+    position: absolute;
+  }
+  .arch-arrow-line::after {
+    content: '';
+    display: block;
+    width: 0;
+    height: 0;
+    border-left: 6px solid var(--border-strong);
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    position: absolute;
+    right: 10%;
+  }
+
+  .layer-public { background: var(--accent-pale); border-color: var(--accent-2); }
+  .layer-core { background: #e8f4ff; border-color: #90bce8; }
+  .layer-export { background: var(--teal-pale); border-color: var(--teal); }
+  .layer-store { background: var(--surface-3); border-color: var(--border-strong); }
+  .layer-ui { background: var(--amber-pale); border-color: #e09030; }
+  .layer-audit { background: var(--green-pale); border-color: #81c784; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 28px 0;
+    overflow-x: auto;
+    padding: 8px 0;
+  }
+  .flow-step {
+    flex-shrink: 0;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 12px 16px;
+    background: var(--surface);
+    text-align: center;
+    min-width: 110px;
+  }
+  .flow-step-icon {
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+  .flow-step-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .flow-step-sub {
+    font-size: 10px;
+    color: var(--ink-faint);
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+  .flow-arrow {
+    flex-shrink: 0;
+    padding: 0 4px;
+    color: var(--ink-faint);
+    font-size: 16px;
+  }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    vertical-align: middle;
+  }
+  .badge-write { background: #e3f2fd; color: #1565c0; }
+  .badge-read { background: var(--teal-pale); color: var(--teal); }
+  .badge-compress { background: var(--amber-pale); color: var(--amber); }
+  .badge-update { background: var(--accent-pale); color: var(--accent); }
+  .badge-ok { background: var(--green-pale); color: var(--green); }
+  .badge-error { background: var(--coral-pale); color: var(--coral); }
+  .badge-dropped { background: var(--surface-3); color: var(--ink-faint); }
+  .badge-new { background: var(--accent-pale); color: var(--accent); }
+
+  /* ── API SYMBOL CARDS ── */
+  .api-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .api-card-header {
+    background: var(--surface-3);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .api-symbol {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .api-kind {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    background: var(--surface-2);
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+  .api-card-body {
+    padding: 16px 20px;
+  }
+  .api-card-body p { font-size: 14px; margin-bottom: 10px; }
+  .api-sig {
+    background: var(--ink);
+    color: #e8e6f0;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin: 8px 0;
+    overflow-x: auto;
+  }
+
+  /* ── STAT CARDS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .stat-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 18px;
+    text-align: center;
+  }
+  .stat-number {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 36px;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  /* ── TECH GRID ── */
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .tech-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+  .tech-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .tech-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .tech-desc {
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+
+  /* ── FILE TREE ── */
+  .file-tree {
+    background: var(--ink);
+    color: #b8b6cc;
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin: 20px 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    overflow-x: auto;
+  }
+  .file-tree .dir { color: #a898f0; }
+  .file-tree .file { color: #e8e6f0; }
+  .file-tree .comment { color: #4a4860; }
+
+  /* ── INTEGRATION CARDS ── */
+  .integration-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin: 20px 0;
+  }
+  .integration-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    background: var(--surface);
+  }
+  .integration-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .integration-extra {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    background: var(--accent-pale);
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+  .integration-class {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-bottom: 12px;
+  }
+  .integration-card table { margin: 0; }
+  .integration-card th, .integration-card td { padding: 6px 10px; font-size: 12px; }
+
+  /* ── CLI COMMAND BLOCKS ── */
+  .cli-block {
+    background: var(--ink);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.8;
+  }
+  .cli-prompt { color: #6a6880; }
+  .cli-cmd { color: #a898f0; }
+  .cli-arg { color: var(--teal); }
+  .cli-flag { color: #e09030; }
+  .cli-comment { color: #4a4860; font-style: italic; }
+
+  /* ── ENV VAR TABLE ── */
+  .env-table td:first-child {
+    font-family: 'DM Mono', monospace;
+    font-size: 11.5px;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  /* ── DIVIDER ── */
+  .page-break { page-break-before: always; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+  /* ── FOOTER ── */
+  .doc-footer {
+    background: var(--surface-2);
+    border-top: 1px solid var(--border);
+    padding: 32px 72px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-brand {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 18px;
+    color: var(--ink);
+  }
+  .footer-brand em { color: var(--accent); font-style: italic; }
+  .footer-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  /* ── PRINT ── */
+  @media print {
+    .hero::before { display: none; }
+    pre, .file-tree, .cli-block, .arch-diagram { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+<div class="hero">
+  <div class="hero-eyebrow">Technical Documentation</div>
+  <h1 class="hero-title">Memory<em>Lens</em></h1>
+  <p class="hero-sub">Observability and debugging for AI agent memory systems — complete technical reference covering SDK, exporters, integrations, web dashboard, compression auditor, and cost attribution.</p>
+  <div class="hero-meta">
+    <div class="meta-pill"><span class="dot dot-green"></span> v0.1.0 Alpha</div>
+    <div class="meta-pill"><span class="dot dot-blue"></span> Python 3.10+</div>
+    <div class="meta-pill"><span class="dot dot-amber"></span> Apache 2.0</div>
+    <div class="meta-pill"><span class="dot"></span> 174 Tests</div>
+    <div class="meta-pill"><span class="dot"></span> Phases 1 &amp; 2 (2a–2d)</div>
+    <div class="meta-pill"><span class="dot"></span> April 2026</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ TOC ═══════════════════════════ -->
+<div class="toc-wrapper">
+  <div class="toc-title">Table of Contents</div>
+  <div class="toc-grid">
+    <div class="toc-item"><span class="toc-num">01</span> Executive Summary</div>
+    <div class="toc-item"><span class="toc-num">02</span> Architecture Overview</div>
+    <div class="toc-item"><span class="toc-num">03</span> Core SDK</div>
+    <div class="toc-item"><span class="toc-num">04</span> Exporters</div>
+    <div class="toc-item"><span class="toc-num">05</span> Framework Integrations</div>
+    <div class="toc-item"><span class="toc-num">06</span> Web Dashboard</div>
+    <div class="toc-item"><span class="toc-num">07</span> Compression Auditor</div>
+    <div class="toc-item"><span class="toc-num">08</span> Cost Attribution</div>
+    <div class="toc-item"><span class="toc-num">09</span> CLI Reference</div>
+    <div class="toc-item"><span class="toc-num">10</span> Public API Reference</div>
+    <div class="toc-item"><span class="toc-num">11</span> Configuration</div>
+    <div class="toc-item"><span class="toc-num">12</span> Testing</div>
+    <div class="toc-item"><span class="toc-num">13</span> Technology Stack</div>
+    <div class="toc-item"><span class="toc-num">14</span> Project Statistics</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ CONTENT ═══════════════════════════ -->
+<div class="content">
+
+<!-- ════════════════════ 01 EXECUTIVE SUMMARY ════════════════════ -->
+<div class="section">
+  <div class="section-label"><span class="section-num">01</span> Executive Summary</div>
+  <h2>What is MemoryLens?</h2>
+
+  <p>MemoryLens is an open-source observability and debugging tool designed specifically for AI agent memory systems. It addresses a critical gap in modern AI application development: <strong>the memory pipeline is opaque</strong>. When an agent "forgets" something a user said, retrieves the wrong memories, or silently drops a fact during compression, there is currently no standard way to see what happened.</p>
+
+  <p>MemoryLens instruments the four fundamental memory operations — <strong>write</strong>, <strong>read</strong>, <strong>compress</strong>, and <strong>update</strong> — and records them as structured traces. These traces expose the full context of every memory interaction: what was stored, what was retrieved, what similarity scores drove retrieval decisions, what content was lost during summarization, and how much each operation cost in tokens and dollars.</p>
+
+  <div class="callout callout-info">
+    <div class="callout-label">Core Problem Statement</div>
+    <p>AI agents built with frameworks like LangChain, Mem0, LlamaIndex, Letta, and Zep rely on memory backends that operate as black boxes. Failures — silent drops, threshold misses, lossy compression — are invisible until they degrade user experience. MemoryLens makes the invisible visible.</p>
+  </div>
+
+  <h3>What Problem It Solves</h3>
+  <ul>
+    <li><strong>Silent memory drops:</strong> writes that fail or are silently discarded due to capacity policies leave no trace without explicit instrumentation</li>
+    <li><strong>Retrieval threshold mysteries:</strong> a memory that scored 0.68 when the threshold is 0.70 is filtered out invisibly — the Retrieval Debugger surfaces exactly this</li>
+    <li><strong>Lossy compression:</strong> conversation summarization can drop critical facts; the Compression Auditor identifies which sentences were lost and quantifies semantic loss</li>
+    <li><strong>Cost blindness:</strong> token and dollar costs per memory operation are typically unmeasured; Cost Attribution tracks them at span granularity</li>
+    <li><strong>No cross-framework standard:</strong> each memory backend has its own logging approach; MemoryLens provides a unified trace schema across all supported frameworks</li>
+  </ul>
+
+  <h3>Design Philosophy</h3>
+  <ul>
+    <li><strong>Zero runtime overhead:</strong> the BatchSpanProcessor exports spans asynchronously in a background thread, keeping instrumentation overhead below 2ms p99</li>
+    <li><strong>OpenTelemetry-native:</strong> spans export via OTLP, making MemoryLens compatible with every OTel-compatible observability backend (Grafana, Honeycomb, Jaeger, Datadog, etc.)</li>
+    <li><strong>Offline analysis:</strong> compression auditing and cost enrichment are post-hoc commands, never executed in the hot path</li>
+    <li><strong>Opt-in extras:</strong> framework integrations, the web UI, audit capabilities, and cost tools are all optional extras — the core package remains lean</li>
+    <li><strong>PII safety by default:</strong> content capture can be disabled globally via <code>MEMORYLENS_CAPTURE_CONTENT=false</code></li>
+  </ul>
+</div>
+
+<!-- ════════════════════ 02 ARCHITECTURE ════════════════════ -->
+<div class="section">
+  <div class="section-label"><span class="section-num">02</span> Architecture Overview</div>
+  <h2>System Architecture</h2>
+
+  <p>MemoryLens is organized as a single Python package (<code>memorylens</code>) with a layered internal structure. Each layer has a clearly defined responsibility and communicates with adjacent layers through well-typed interfaces.</p>
+
+  <!-- Architecture Diagram -->
+  <div class="arch-diagram">
+    <div style="text-align:center; margin-bottom: 24px;">
+      <div style="font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 4px;">MemoryLens — Layered Architecture</div>
+    </div>
+
+    <div class="arch-layer">
+      <div class="arch-layer-label">Public API</div>
+      <div class="arch-box layer-public" style="text-align:left; padding:14px 18px;">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span style="background:var(--accent); color:white; font-family:'DM Mono',monospace; font-size:11px; padding:4px 10px; border-radius:5px;">memorylens.init()</span>
+          <span style="background:var(--accent); color:white; font-family:'DM Mono',monospace; font-size:11px; padding:4px 10px; border-radius:5px;">memorylens.context()</span>
+          <span style="background:var(--accent); color:white; font-family:'DM Mono',monospace; font-size:11px; padding:4px 10px; border-radius:5px;">@instrument_write</span>
+          <span style="background:var(--accent); color:white; font-family:'DM Mono',monospace; font-size:11px; padding:4px 10px; border-radius:5px;">@instrument_read</span>
+          <span style="background:var(--accent); color:white; font-family:'DM Mono',monospace; font-size:11px; padding:4px 10px; border-radius:5px;">@instrument_compress</span>
+          <span style="background:var(--accent); color:white; font-family:'DM Mono',monospace; font-size:11px; padding:4px 10px; border-radius:5px;">@instrument_update</span>
+          <span style="background:var(--accent); color:white; font-family:'DM Mono',monospace; font-size:11px; padding:4px 10px; border-radius:5px;">memorylens.get_tracer()</span>
+          <span style="background:var(--accent); color:white; font-family:'DM Mono',monospace; font-size:11px; padding:4px 10px; border-radius:5px;">memorylens.shutdown()</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-arrow"><div class="arch-arrow-line"></div></div>
+
+    <div class="arch-layer">
+      <div class="arch-layer-label">Core</div>
+      <div class="arch-box layer-core" style="flex:2; text-align:left; padding:14px 18px;">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span style="background:#1565c0; color:white; font-family:'DM Mono',monospace; font-size:11px; padding:4px 10px; border-radius:5px;">TracerProvider (singleton)</span>
+          <span style="background:#1565c0; color:white; font-family:'DM Mono',monospace; font-size:11px; padding:4px 10px; border-radius:5px;">Tracer + _MutableSpan</span>
+          <span style="background:#1565c0; color:white; font-family:'DM Mono',monospace; font-size:11px; padding:4px 10px; border-radius:5px;">MemorySpan (frozen dataclass)</span>
+          <span style="background:#1565c0; color:white; font-family:'DM Mono',monospace; font-size:11px; padding:4px 10px; border-radius:5px;">BatchSpanProcessor</span>
+          <span style="background:#1565c0; color:white; font-family:'DM Mono',monospace; font-size:11px; padding:4px 10px; border-radius:5px;">SimpleSpanProcessor</span>
+          <span style="background:#1565c0; color:white; font-family:'DM Mono',monospace; font-size:11px; padding:4px 10px; border-radius:5px;">MemoryContext (ContextVar)</span>
+          <span style="background:#1565c0; color:white; font-family:'DM Mono',monospace; font-size:11px; padding:4px 10px; border-radius:5px;">Sampler</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-arrow"><div class="arch-arrow-line"></div></div>
+
+    <div class="arch-layer">
+      <div class="arch-layer-label">Exporters</div>
+      <div class="arch-box layer-export" style="flex:1; margin-right:8px;">
+        <div class="arch-box-name">SQLiteExporter</div>
+        <div class="arch-box-desc">~/.memorylens/traces.db<br>WAL mode, indexed</div>
+      </div>
+      <div class="arch-box layer-export" style="flex:1; margin-right:8px;">
+        <div class="arch-box-name">OTLPExporter</div>
+        <div class="arch-box-desc">gRPC to any OTel<br>compatible backend</div>
+      </div>
+      <div class="arch-box layer-export" style="flex:1;">
+        <div class="arch-box-name">JSONLExporter</div>
+        <div class="arch-box-desc">stdout or file<br>portable export</div>
+      </div>
+    </div>
+
+    <div class="arch-arrow"><div class="arch-arrow-line"></div></div>
+
+    <div class="arch-layer">
+      <div class="arch-layer-label">Analysis</div>
+      <div class="arch-box layer-audit" style="flex:1; margin-right:8px;">
+        <div class="arch-box-name">Compression Auditor</div>
+        <div class="arch-box-desc">CompressionAnalyzer<br>LocalScorer / OpenAIScorer<br>compression_audits table</div>
+      </div>
+      <div class="arch-box layer-audit" style="flex:1; margin-right:8px;">
+        <div class="arch-box-name">Cost Enricher</div>
+        <div class="arch-box-desc">CostEnricher<br>PricingModel<br>update_span_attributes()</div>
+      </div>
+      <div class="arch-box layer-audit" style="flex:1;">
+        <div class="arch-box-name">Integrations</div>
+        <div class="arch-box-desc">LangChain / Mem0<br>LlamaIndex / Letta / Zep<br>Instrumentor protocol</div>
+      </div>
+    </div>
+
+    <div class="arch-arrow"><div class="arch-arrow-line"></div></div>
+
+    <div class="arch-layer">
+      <div class="arch-layer-label">Interface</div>
+      <div class="arch-box layer-ui" style="flex:1; margin-right:8px;">
+        <div class="arch-box-name">Web Dashboard</div>
+        <div class="arch-box-desc">FastAPI + Jinja2 + htmx<br>Trace List, Detail,<br>Retrieval Debugger,<br>Compression Audit</div>
+      </div>
+      <div class="arch-box layer-ui" style="flex:1;">
+        <div class="arch-box-name">CLI (Typer)</div>
+        <div class="arch-box-desc">traces / stats / config<br>audit / cost<br>Rich tables + JSON output</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Data Flow: Instrumentation to Visualization</h3>
+
+  <div class="flow-diagram">
+    <div class="flow-step">
+      <div class="flow-step-icon">&#128221;</div>
+      <div class="flow-step-name">User Code</div>
+      <div class="flow-step-sub">decorator or<br>instrumentor</div>
+    </div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-step">
+      <div class="flow-step-icon">&#9202;</div>
+      <div class="flow-step-name">Tracer</div>
+      <div class="flow-step-sub">creates<br>_MutableSpan</div>
+    </div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-step">
+      <div class="flow-step-icon">&#128190;</div>
+      <div class="flow-step-name">MemorySpan</div>
+      <div class="flow-step-sub">frozen<br>dataclass</div>
+    </div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-step">
+      <div class="flow-step-icon">&#9881;</div>
+      <div class="flow-step-name">SpanProcessor</div>
+      <div class="flow-step-sub">batch queue<br>background thread</div>
+    </div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-step">
+      <div class="flow-step-icon">&#128229;</div>
+      <div class="flow-step-name">Exporter</div>
+      <div class="flow-step-sub">SQLite / OTLP<br>/ JSONL</div>
+    </div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-step">
+      <div class="flow-step-icon">&#128203;</div>
+      <div class="flow-step-name">Storage</div>
+      <div class="flow-step-sub">traces.db or<br>remote backend</div>
+    </div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-step">
+      <div class="flow-step-icon">&#128202;</div>
+      <div class="flow-step-name">CLI / UI</div>
+      <div class="flow-step-sub">inspect, debug<br>audit, cost</div>
+    </div>
+  </div>
+
+  <h3>Key Architectural Decisions</h3>
+  <table>
+    <thead><tr><th>Decision</th><th>Choice</th><th>Rationale</th></tr></thead>
+    <tbody>
+      <tr><td>Distribution</td><td>Core + optional extras</td><td>Keeps core lean; integrations, UI, audit, cost are all opt-in</td></tr>
+      <tr><td>Python version</td><td>3.10+</td><td>Modern type syntax, <code>match/case</code>, covers vast majority of agent developers</td></tr>
+      <tr><td>Async strategy</td><td>Sync API, async export in background thread</td><td>Small API surface, &lt;2ms p99 overhead via <code>BatchSpanProcessor</code></td></tr>
+      <tr><td>Local storage</td><td>SQLite (primary) + JSONL export</td><td>Structured queries for CLI + portable file export</td></tr>
+      <tr><td>Instrumentation</td><td>Decorators (core) + auto-instrumentation (integrations)</td><td>Manual for custom backends; "3 lines of code" for supported frameworks</td></tr>
+      <tr><td>CLI style</td><td>Subcommand-based (Typer)</td><td>Scriptable, composable, rich table output</td></tr>
+      <tr><td>Web UI tech</td><td>FastAPI + htmx + Jinja2</td><td>Python-native, no Node.js/build step required</td></tr>
+      <tr><td>OTel integration</td><td>Full OTLP export (gRPC + HTTP)</td><td>1:1 span mapping; works with every OTel backend</td></tr>
+      <tr><td>Analysis timing</td><td>Offline (CLI commands)</td><td>Zero runtime overhead; audits are re-runnable</td></tr>
+      <tr><td>Build system</td><td>uv + hatchling + pyproject.toml</td><td>Fast, modern, signals contemporary project</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ════════════════════ 03 CORE SDK ════════════════════ -->
+<div class="section page-break">
+  <div class="section-label"><span class="section-num">03</span> Core SDK</div>
+  <h2>Core SDK — <code>memorylens._core</code></h2>
+
+  <p>The core layer is the heart of MemoryLens. It defines the trace schema, manages the tracer lifecycle, implements context propagation, and runs the span processor pipeline. Everything else in the system builds on top of these primitives.</p>
+
+  <h3>Trace Schema and Data Model</h3>
+
+  <h4>MemorySpan</h4>
+  <p><code>MemorySpan</code> is a frozen, slotted dataclass — immutable once finalized. Every memory operation produces exactly one <code>MemorySpan</code>. The schema is the single source of truth for all downstream consumers: exporters, the CLI, the web UI, and the analysis tools.</p>
+
+  <pre><code><span class="cm"># src/memorylens/_core/span.py</span>
+<span class="kw">@dataclass</span>(frozen=<span class="kw">True</span>, slots=<span class="kw">True</span>)
+<span class="kw">class</span> <span class="tp">MemorySpan</span>:
+    <span class="cm">"""A single traced memory operation."""</span>
+
+    <span class="cm"># Identity</span>
+    span_id: <span class="tp">str</span>                <span class="cm"># unique hex UUID</span>
+    trace_id: <span class="tp">str</span>               <span class="cm"># groups spans in one logical operation</span>
+    parent_span_id: <span class="tp">str | None</span>  <span class="cm"># for nested operations</span>
+
+    <span class="cm"># Classification</span>
+    operation: <span class="tp">MemoryOperation</span>  <span class="cm"># WRITE, READ, COMPRESS, UPDATE</span>
+    status: <span class="tp">SpanStatus</span>          <span class="cm"># OK, ERROR, DROPPED</span>
+
+    <span class="cm"># Timing (epoch nanoseconds)</span>
+    start_time: <span class="tp">float</span>
+    end_time: <span class="tp">float</span>
+    duration_ms: <span class="tp">float</span>          <span class="cm"># computed: (end - start) / 1_000_000</span>
+
+    <span class="cm"># Context (inherited from MemoryContext)</span>
+    agent_id: <span class="tp">str | None</span>
+    session_id: <span class="tp">str | None</span>
+    user_id: <span class="tp">str | None</span>
+
+    <span class="cm"># Memory content (redactable via MEMORYLENS_CAPTURE_CONTENT=false)</span>
+    input_content: <span class="tp">str | None</span>
+    output_content: <span class="tp">str | None</span>
+
+    <span class="cm"># Operation-specific attributes (free-form dict)</span>
+    attributes: <span class="tp">dict[str, Any]</span> = field(default_factory=<span class="tp">dict</span>)
+
+    <span class="kw">def</span> <span class="fn">to_dict</span>(self) -> <span class="tp">dict[str, Any]</span>:
+        <span class="cm">"""Serialize to plain dict. Enum values become their string values."""</span></code></pre>
+
+  <h4>MemoryOperation Enum</h4>
+  <p>The four fundamental operations of any memory system, modeled as a <code>str</code> enum so values serialize naturally:</p>
+
+  <table>
+    <thead><tr><th>Enum Value</th><th>String Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>MemoryOperation.WRITE</code></td><td><code>memory.write</code></td><td>Storing content into memory (includes explicit deletes with status=DROPPED)</td></tr>
+      <tr><td><code>MemoryOperation.READ</code></td><td><code>memory.read</code></td><td>Retrieving memories, typically by semantic search or key lookup</td></tr>
+      <tr><td><code>MemoryOperation.COMPRESS</code></td><td><code>memory.compress</code></td><td>Summarizing or condensing memory content via an LLM</td></tr>
+      <tr><td><code>MemoryOperation.UPDATE</code></td><td><code>memory.update</code></td><td>Modifying an existing memory entry (merge, replace, or append)</td></tr>
+    </tbody>
+  </table>
+
+  <h4>SpanStatus Enum</h4>
+  <table>
+    <thead><tr><th>Enum Value</th><th>String Value</th><th>When Used</th></tr></thead>
+    <tbody>
+      <tr><td><code>SpanStatus.OK</code></td><td><code>ok</code></td><td>Operation completed successfully</td></tr>
+      <tr><td><code>SpanStatus.ERROR</code></td><td><code>error</code></td><td>Operation raised an exception; <code>error.type</code> and <code>error.message</code> are set in attributes</td></tr>
+      <tr><td><code>SpanStatus.DROPPED</code></td><td><code>dropped</code></td><td>Content was explicitly discarded; <code>drop_reason</code> attribute explains why</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Operation-Specific Attributes</h4>
+  <p>The <code>attributes</code> dict carries operation-type-specific fields. These map 1:1 to OTLP span attributes with a <code>memorylens.</code> prefix:</p>
+
+  <table>
+    <thead><tr><th>Operation</th><th>Key Attributes</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-write">WRITE</span></td>
+        <td><code>memory_key</code>, <code>backend</code>, <code>drop_reason</code>, <code>drop_policy</code>, <code>embedding_model</code>, <code>vector_dim</code></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-read">READ</span></td>
+        <td><code>query</code>, <code>results_count</code>, <code>scores</code> (list of floats), <code>threshold</code>, <code>backend</code>, <code>top_k</code></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-compress">COMPRESS</span></td>
+        <td><code>pre_content</code>, <code>post_content</code>, <code>compression_ratio</code>, <code>semantic_loss_score</code>, <code>model_used</code></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-update">UPDATE</span></td>
+        <td><code>memory_key</code>, <code>previous_version</code>, <code>new_version</code>, <code>update_type</code> (merge/replace/append)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>TracerProvider and Tracer</h3>
+
+  <p>The <code>TracerProvider</code> is a singleton that holds global configuration: the processor pipeline, the sampler, and the service name. All instrumentation flows through it.</p>
+
+  <pre><code><span class="cm"># src/memorylens/_core/tracer.py</span>
+<span class="kw">class</span> <span class="tp">TracerProvider</span>:
+    <span class="cm">"""Singleton that manages tracers, processors, and sampling."""</span>
+    _instance: <span class="tp">TracerProvider | None</span> = <span class="kw">None</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(self) -> <span class="kw">None</span>:
+        self.processors: <span class="tp">list[SpanProcessor]</span> = []
+        self.sampler = <span class="tp">Sampler</span>(rate=<span class="nm">1.0</span>)
+        self.service_name: <span class="tp">str</span> = <span class="st">"memorylens"</span>
+
+    <span class="kw">def</span> <span class="fn">add_processor</span>(self, processor: <span class="tp">SpanProcessor</span>) -> <span class="kw">None</span>: ...
+    <span class="kw">def</span> <span class="fn">get_tracer</span>(self, name: <span class="tp">str</span>) -> <span class="tp">Tracer</span>: ...
+    <span class="kw">def</span> <span class="fn">shutdown</span>(self) -> <span class="kw">None</span>: ...
+
+    <span class="kw">@classmethod</span>
+    <span class="kw">def</span> <span class="fn">get</span>(cls) -> <span class="tp">TracerProvider</span>: ...  <span class="cm"># singleton accessor</span>
+
+    <span class="kw">@classmethod</span>
+    <span class="kw">def</span> <span class="fn">reset</span>(cls) -> <span class="kw">None</span>: ...  <span class="cm"># for testing — shuts down and clears instance</span></code></pre>
+
+  <p>The <code>Tracer</code> is created per-module (by name) via <code>provider.get_tracer(name)</code>. It provides a context manager for creating spans:</p>
+
+  <pre><code><span class="kw">class</span> <span class="tp">Tracer</span>:
+    <span class="kw">@contextmanager</span>
+    <span class="kw">def</span> <span class="fn">start_span</span>(
+        self,
+        operation: <span class="tp">MemoryOperation</span>,
+        parent_span_id: <span class="tp">str | None</span> = <span class="kw">None</span>,
+        attributes: <span class="tp">dict[str, Any] | None</span> = <span class="kw">None</span>,
+    ) -> <span class="tp">Generator[_MutableSpan, None, None]</span>:
+        <span class="cm"># 1. Check sampler — if not sampled, yield a no-op span</span>
+        <span class="cm"># 2. Read current MemoryContext for agent/session/user IDs</span>
+        <span class="cm"># 3. Create _MutableSpan with new trace_id and span_id (UUID hex)</span>
+        <span class="cm"># 4. Call on_start() on all processors</span>
+        <span class="cm"># 5. yield span — caller can set attributes, content, status</span>
+        <span class="cm"># 6. On exception: set status=ERROR, capture error.type/error.message</span>
+        <span class="cm"># 7. On exit: finalize() → frozen MemorySpan, call on_end() on all processors</span></code></pre>
+
+  <p>The internal <code>_MutableSpan</code> builder accumulates state during the span lifecycle. It exposes <code>set_attribute()</code>, <code>set_status()</code>, and <code>set_content()</code> methods. <code>finalize()</code> stamps <code>end_time</code>, computes <code>duration_ms</code>, and returns an immutable <code>MemorySpan</code>.</p>
+
+  <h3>Decorators</h3>
+
+  <p>The four <code>instrument_*</code> decorators are the primary instrumentation API. They wrap existing functions without requiring any modification to the function body.</p>
+
+  <pre><code><span class="cm"># src/memorylens/_core/decorators.py</span>
+
+<span class="kw">@instrument_write</span>(backend=<span class="st">"mem0"</span>, capture_content=<span class="kw">True</span>)
+<span class="kw">def</span> <span class="fn">store_memory</span>(user_id: <span class="tp">str</span>, content: <span class="tp">str</span>) -> <span class="tp">bool</span>: ...
+
+<span class="kw">@instrument_read</span>(backend=<span class="st">"mem0"</span>, top_k=<span class="nm">5</span>)
+<span class="kw">def</span> <span class="fn">search_memories</span>(query: <span class="tp">str</span>) -> <span class="tp">list[Memory]</span>: ...
+
+<span class="kw">@instrument_compress</span>(model=<span class="st">"gpt-4o-mini"</span>)
+<span class="kw">def</span> <span class="fn">summarize</span>(memories: <span class="tp">list[str]</span>) -> <span class="tp">str</span>: ...
+
+<span class="kw">@instrument_update</span>(backend=<span class="st">"mem0"</span>)
+<span class="kw">def</span> <span class="fn">update_memory</span>(memory_id: <span class="tp">str</span>, new_content: <span class="tp">str</span>) -> <span class="tp">bool</span>: ...</code></pre>
+
+  <p>All four decorators are implemented via a shared <code>_make_decorator(operation, **kwargs)</code> factory. The wrapper function:</p>
+  <ol>
+    <li>Gets the <code>TracerProvider</code> singleton and acquires a tracer for the wrapped function's module</li>
+    <li>Opens a span with the correct <code>MemoryOperation</code> and any static keyword arguments as initial attributes</li>
+    <li>Conditionally captures <code>repr(args/kwargs)</code> as <code>input_content</code> (if <code>capture_content=True</code>)</li>
+    <li>Calls the original function</li>
+    <li>Conditionally captures <code>repr(result)</code> as <code>output_content</code></li>
+    <li>Returns the result — exceptions propagate naturally after setting <code>status=ERROR</code></li>
+  </ol>
+
+  <p><strong>Content capture resolution order:</strong> explicit decorator kwarg → <code>MEMORYLENS_CAPTURE_CONTENT</code> env var → default <code>True</code>.</p>
+
+  <h3>Context Propagation</h3>
+
+  <p>The <code>MemoryContext</code> is a frozen dataclass that acts as a Python context manager. It uses <code>ContextVar</code> (from the standard library <code>contextvars</code> module) to propagate agent/session/user metadata through the call stack without modifying function signatures. It is fully async-safe because <code>ContextVar</code> isolates state per asyncio Task.</p>
+
+  <pre><code><span class="cm"># src/memorylens/_core/context.py</span>
+<span class="kw">@dataclass</span>(frozen=<span class="kw">True</span>, slots=<span class="kw">True</span>)
+<span class="kw">class</span> <span class="tp">MemoryContext</span>:
+    agent_id: <span class="tp">str | None</span> = <span class="kw">None</span>
+    session_id: <span class="tp">str | None</span> = <span class="kw">None</span>
+    user_id: <span class="tp">str | None</span> = <span class="kw">None</span>
+
+    <span class="kw">def</span> <span class="fn">__enter__</span>(self) -> <span class="tp">Self</span>:
+        <span class="cm"># sets the ContextVar token</span>
+        object.__setattr__(self, <span class="st">"_token"</span>, _current_context.set(self))
+        <span class="kw">return</span> self
+
+    <span class="kw">def</span> <span class="fn">__exit__</span>(self, *exc) -> <span class="kw">None</span>:
+        <span class="cm"># resets to the previous context (safe nesting)</span>
+        _current_context.reset(self._token)
+
+<span class="cm"># Usage:</span>
+<span class="kw">with</span> memorylens.context(agent_id=<span class="st">"support-bot"</span>, session_id=<span class="st">"sess-123"</span>):
+    store_memory(<span class="st">"user prefers vegetarian meals"</span>)
+    <span class="cm"># → span will have agent_id="support-bot", session_id="sess-123"</span></code></pre>
+
+  <p>The public <code>memorylens.context()</code> function wraps <code>MemoryContext</code> constructor. The <code>Tracer.start_span()</code> calls <code>get_current_context()</code> to read the active context at span creation time.</p>
+
+  <h3>SpanProcessor Pipeline</h3>
+
+  <p>Span processors sit between the tracer and the exporters. They receive spans via <code>on_start()</code> (before execution) and <code>on_end()</code> (after execution). Multiple processors can be registered; they are called in registration order.</p>
+
+  <pre><code><span class="kw">class</span> <span class="tp">SpanProcessor</span>(<span class="tp">Protocol</span>):
+    <span class="kw">def</span> <span class="fn">on_start</span>(self, span: <span class="tp">MemorySpan</span>) -> <span class="kw">None</span>: ...
+    <span class="kw">def</span> <span class="fn">on_end</span>(self, span: <span class="tp">MemorySpan</span>) -> <span class="kw">None</span>: ...
+    <span class="kw">def</span> <span class="fn">shutdown</span>(self) -> <span class="kw">None</span>: ...
+    <span class="kw">def</span> <span class="fn">force_flush</span>(self, timeout_ms: <span class="tp">int</span> = <span class="nm">30000</span>) -> <span class="tp">bool</span>: ...</code></pre>
+
+  <h4>SimpleSpanProcessor</h4>
+  <p>Synchronous: calls <code>exporter.export([span])</code> immediately on <code>on_end()</code>. Used for debugging, testing, and scenarios where latency is not a concern.</p>
+
+  <h4>BatchSpanProcessor</h4>
+  <p>The production processor. Appends spans to a bounded <code>deque</code> (max 2048) under a lock. A daemon thread wakes every 5 seconds (or when the queue reaches 512 spans, or on <code>force_flush()</code>) and exports in batches. This keeps the hot path non-blocking.</p>
+
+  <pre><code><span class="kw">class</span> <span class="tp">BatchSpanProcessor</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(
+        self,
+        exporter: <span class="tp">SpanExporter</span>,
+        max_batch_size: <span class="tp">int</span> = <span class="nm">512</span>,       <span class="cm"># trigger flush when queue hits this</span>
+        schedule_delay_ms: <span class="tp">int</span> = <span class="nm">5000</span>,   <span class="cm"># background flush interval</span>
+        max_queue_size: <span class="tp">int</span> = <span class="nm">2048</span>,      <span class="cm"># drops oldest spans if exceeded</span>
+    ) -> <span class="kw">None</span>: ...</code></pre>
+
+  <p>On <code>shutdown()</code>, the processor signals the background thread, waits up to 10 seconds, flushes any remaining spans, then shuts down the exporter.</p>
+
+  <h3>Sampler</h3>
+  <p>The <code>Sampler</code> is a simple rate-based sampler. It generates a random float on each call to <code>should_sample()</code> and returns <code>True</code> if it is below the configured rate. Rate is set via <code>memorylens.init(sample_rate=0.1)</code> or <code>MEMORYLENS_SAMPLE_RATE</code> env var. Default is <code>1.0</code> (sample everything). When a span is not sampled, the tracer yields a no-op <code>_MutableSpan</code> with empty IDs and skips all processor calls.</p>
+</div>
+
+<!-- ════════════════════ 04 EXPORTERS ════════════════════ -->
+<div class="section page-break">
+  <div class="section-label"><span class="section-num">04</span> Exporters</div>
+  <h2>Exporters — <code>memorylens._exporters</code></h2>
+
+  <p>Exporters are the output stage of the pipeline. They receive batches of <code>MemorySpan</code> objects from the processor and persist them to a backend. Three exporters ship with MemoryLens core.</p>
+
+  <h3>SpanExporter Protocol</h3>
+  <pre><code><span class="kw">class</span> <span class="tp">SpanExporter</span>(<span class="tp">Protocol</span>):
+    <span class="kw">def</span> <span class="fn">export</span>(self, spans: <span class="tp">list[MemorySpan]</span>) -> <span class="tp">ExportResult</span>: ...
+    <span class="kw">def</span> <span class="fn">shutdown</span>(self) -> <span class="kw">None</span>: ...
+
+<span class="kw">class</span> <span class="tp">ExportResult</span>(<span class="tp">Enum</span>):
+    SUCCESS = <span class="st">"success"</span>
+    FAILURE = <span class="st">"failure"</span></code></pre>
+
+  <h3>SQLite Exporter</h3>
+  <p>The primary local storage backend. Writes spans to a SQLite database at <code>~/.memorylens/traces.db</code> (configurable). Designed for developer use: zero server setup, persistent across sessions, queryable with standard SQL.</p>
+
+  <h4>Database Schema</h4>
+  <pre><code><span class="cm">-- spans table (created on first use)</span>
+<span class="kw">CREATE TABLE IF NOT EXISTS</span> spans (
+    span_id        <span class="tp">TEXT</span> <span class="kw">PRIMARY KEY</span>,
+    trace_id       <span class="tp">TEXT NOT NULL</span>,
+    parent_span_id <span class="tp">TEXT</span>,
+    operation      <span class="tp">TEXT NOT NULL</span>,        <span class="cm">-- "memory.write" etc.</span>
+    status         <span class="tp">TEXT NOT NULL</span>,        <span class="cm">-- "ok" / "error" / "dropped"</span>
+    start_time     <span class="tp">REAL NOT NULL</span>,        <span class="cm">-- epoch nanoseconds</span>
+    end_time       <span class="tp">REAL NOT NULL</span>,
+    duration_ms    <span class="tp">REAL NOT NULL</span>,
+    agent_id       <span class="tp">TEXT</span>,
+    session_id     <span class="tp">TEXT</span>,
+    user_id        <span class="tp">TEXT</span>,
+    input_content  <span class="tp">TEXT</span>,
+    output_content <span class="tp">TEXT</span>,
+    attributes     <span class="tp">TEXT NOT NULL DEFAULT</span> <span class="st">'{}'</span>  <span class="cm">-- JSON blob</span>
+)
+
+<span class="cm">-- Indexes for common query patterns</span>
+<span class="kw">CREATE INDEX IF NOT EXISTS</span> idx_spans_trace_id   <span class="kw">ON</span> spans (trace_id)
+<span class="kw">CREATE INDEX IF NOT EXISTS</span> idx_spans_session_id <span class="kw">ON</span> spans (session_id)
+<span class="kw">CREATE INDEX IF NOT EXISTS</span> idx_spans_operation  <span class="kw">ON</span> spans (operation)
+<span class="kw">CREATE INDEX IF NOT EXISTS</span> idx_spans_start_time <span class="kw">ON</span> spans (start_time)</code></pre>
+
+  <p>The connection is opened in <strong>WAL mode</strong> (<code>PRAGMA journal_mode=WAL</code>) for concurrent read safety. <code>check_same_thread=False</code> is set because the <code>BatchSpanProcessor</code> writes from a background thread.</p>
+
+  <h4>Query Methods</h4>
+  <table>
+    <thead><tr><th>Method</th><th>Parameters</th><th>Returns</th><th>Used By</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>query()</code></td>
+        <td><code>trace_id, operation, status, agent_id, session_id, limit</code></td>
+        <td><code>list[dict]</code></td>
+        <td>CLI commands</td>
+      </tr>
+      <tr>
+        <td><code>query_extended()</code></td>
+        <td>Same as above + <code>q</code> (full-text), <code>offset</code></td>
+        <td><code>tuple[list[dict], int]</code> (rows + total count)</td>
+        <td>Web UI (pagination + search)</td>
+      </tr>
+      <tr>
+        <td><code>save_audit()</code></td>
+        <td><code>audit: CompressionAudit</code></td>
+        <td><code>None</code></td>
+        <td>Compression Auditor</td>
+      </tr>
+      <tr>
+        <td><code>get_audit()</code></td>
+        <td><code>span_id: str</code></td>
+        <td><code>dict | None</code></td>
+        <td>Compression UI view</td>
+      </tr>
+      <tr>
+        <td><code>list_audits()</code></td>
+        <td><code>limit, offset</code></td>
+        <td><code>tuple[list[dict], int]</code></td>
+        <td>CLI audit list</td>
+      </tr>
+      <tr>
+        <td><code>update_span_attributes()</code></td>
+        <td><code>span_id, new_attrs: dict</code></td>
+        <td><code>None</code></td>
+        <td>Cost enricher (merges cost_usd into attributes)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4>Compression Audits Table</h4>
+  <p>Created lazily on the first <code>save_audit()</code> call (not at initialization):</p>
+  <pre><code><span class="kw">CREATE TABLE IF NOT EXISTS</span> compression_audits (
+    span_id             <span class="tp">TEXT PRIMARY KEY</span>,
+    semantic_loss_score <span class="tp">REAL NOT NULL</span>,
+    compression_ratio   <span class="tp">REAL NOT NULL</span>,
+    pre_sentence_count  <span class="tp">INTEGER NOT NULL</span>,
+    post_sentence_count <span class="tp">INTEGER NOT NULL</span>,
+    sentences           <span class="tp">TEXT NOT NULL</span>,    <span class="cm">-- JSON array of SentenceAnalysis dicts</span>
+    scorer_backend      <span class="tp">TEXT NOT NULL</span>,    <span class="cm">-- "local" or "openai"</span>
+    created_at          <span class="tp">REAL NOT NULL</span>     <span class="cm">-- epoch timestamp</span>
+)</code></pre>
+
+  <h3>OTLP Exporter</h3>
+  <p>Translates <code>MemorySpan</code> objects to OpenTelemetry spans using a <code>_ReadableSpanAdapter</code> that presents the MemoryLens schema as an OTel-compatible interface. This allows using the upstream <code>OTLPSpanExporter</code> from the OpenTelemetry SDK directly.</p>
+
+  <h4>_ReadableSpanAdapter</h4>
+  <p>The adapter presents <code>MemorySpan</code> fields as OTel span properties:</p>
+  <table>
+    <thead><tr><th>OTel Property</th><th>Source</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>name</code></td><td><code>span.operation.value</code></td><td>e.g., <code>"memory.write"</code></td></tr>
+      <tr><td><code>context.trace_id</code></td><td><code>int(span.trace_id[:32], 16)</code></td><td>128-bit int from hex string</td></tr>
+      <tr><td><code>context.span_id</code></td><td><code>int(span.span_id[:16], 16)</code></td><td>64-bit int from hex string</td></tr>
+      <tr><td><code>start_time</code></td><td><code>int(span.start_time)</code></td><td>nanoseconds</td></tr>
+      <tr><td><code>end_time</code></td><td><code>int(span.end_time)</code></td><td>nanoseconds</td></tr>
+      <tr><td><code>attributes</code></td><td>All span fields prefixed with <code>memorylens.</code></td><td>Nested dicts serialized as JSON strings</td></tr>
+      <tr><td><code>status</code></td><td><code>StatusCode.ERROR</code> if <code>error</code>, else <code>StatusCode.OK</code></td><td></td></tr>
+      <tr><td><code>kind</code></td><td><code>SpanKind.INTERNAL</code></td><td></td></tr>
+      <tr><td><code>resource</code></td><td><code>Resource.create({"service.name": "memorylens"})</code></td><td></td></tr>
+    </tbody>
+  </table>
+
+  <p>The OTLP exporter is configured via standard OTel environment variables: <code>OTEL_EXPORTER_OTLP_ENDPOINT</code>, <code>OTEL_EXPORTER_OTLP_HEADERS</code>, and <code>OTEL_EXPORTER_OTLP_PROTOCOL</code>. The default endpoint is <code>http://localhost:4317</code>.</p>
+
+  <h3>JSONL Exporter</h3>
+  <p>The simplest exporter — writes one JSON object per line to stdout or a file path. Stateless. Used by <code>memorylens traces export</code> and as a portable format for piping to other tools. Each line is the output of <code>span.to_dict()</code>.</p>
+
+  <h3>Exporter Registry and Factory</h3>
+  <pre><code><span class="cm"># src/memorylens/_exporters/__init__.py</span>
+<span class="kw">def</span> <span class="fn">create_exporter</span>(name: <span class="tp">str</span>, **kwargs) -> <span class="tp">SpanExporter</span>:
+    <span class="kw">match</span> name:
+        <span class="kw">case</span> <span class="st">"sqlite"</span>: <span class="kw">return</span> <span class="tp">SQLiteExporter</span>(**kwargs)
+        <span class="kw">case</span> <span class="st">"otlp"</span>:   <span class="kw">return</span> <span class="tp">OTLPExporter</span>(**kwargs)
+        <span class="kw">case</span> <span class="st">"jsonl"</span>:  <span class="kw">return</span> <span class="tp">JSONLExporter</span>(**kwargs)
+        <span class="kw">case</span> _: <span class="kw">raise</span> <span class="tp">ValueError</span>(f<span class="st">"Unknown exporter: {name}"</span>)</code></pre>
+</div>
+
+<!-- ════════════════════ 05 INTEGRATIONS ════════════════════ -->
+<div class="section page-break">
+  <div class="section-label"><span class="section-num">05</span> Framework Integrations</div>
+  <h2>Framework Integrations — <code>memorylens.integrations</code></h2>
+
+  <p>Auto-instrumentation patches framework memory classes at runtime so that zero code changes are required in user applications. Each integration follows an identical <code>Instrumentor</code> protocol.</p>
+
+  <h3>Instrumentor Protocol</h3>
+  <pre><code><span class="kw">class</span> <span class="tp">Instrumentor</span>(<span class="tp">Protocol</span>):
+    <span class="kw">def</span> <span class="fn">instrument</span>(self, **kwargs) -> <span class="kw">None</span>: ...
+    <span class="kw">def</span> <span class="fn">uninstrument</span>(self) -> <span class="kw">None</span>: ...</code></pre>
+
+  <p>Each instrumentor stores the original method references so <code>uninstrument()</code> can restore the original behavior. The integration registry maps names to instrumentor classes:</p>
+
+  <pre><code><span class="cm"># memorylens.init(instrument=["langchain", "mem0"]) resolves via:</span>
+<span class="kw">def</span> <span class="fn">create_instrumentor</span>(name: <span class="tp">str</span>) -> <span class="tp">Instrumentor</span>:
+    <span class="kw">return</span> _REGISTRY[name]()  <span class="cm"># raises helpful error if framework not installed</span></code></pre>
+
+  <div class="integration-grid">
+    <div class="integration-card">
+      <div class="integration-title">
+        LangChain
+        <span class="integration-extra">memorylens[langchain]</span>
+      </div>
+      <div class="integration-class">Patches: BaseMemory (langchain-core)</div>
+      <table>
+        <thead><tr><th>Method</th><th>Operation</th></tr></thead>
+        <tbody>
+          <tr><td><code>save_context()</code></td><td><span class="badge badge-write">WRITE</span></td></tr>
+          <tr><td><code>load_memory_variables()</code></td><td><span class="badge badge-read">READ</span></td></tr>
+          <tr><td><code>ConversationSummaryMemory</code> summarize</td><td><span class="badge badge-compress">COMPRESS</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="integration-card">
+      <div class="integration-title">
+        Mem0
+        <span class="integration-extra">memorylens[mem0]</span>
+      </div>
+      <div class="integration-class">Patches: Memory class (mem0ai)</div>
+      <table>
+        <thead><tr><th>Method</th><th>Operation</th></tr></thead>
+        <tbody>
+          <tr><td><code>add()</code></td><td><span class="badge badge-write">WRITE</span></td></tr>
+          <tr><td><code>search()</code></td><td><span class="badge badge-read">READ</span> (captures scores)</td></tr>
+          <tr><td><code>update()</code></td><td><span class="badge badge-update">UPDATE</span></td></tr>
+          <tr><td><code>delete()</code></td><td><span class="badge badge-write">WRITE</span> status=DROPPED</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="integration-card">
+      <div class="integration-title">
+        LlamaIndex
+        <span class="integration-extra">memorylens[llamaindex]</span>
+      </div>
+      <div class="integration-class">Patches: ChatMemoryBuffer (llama-index-core)</div>
+      <table>
+        <thead><tr><th>Method</th><th>Operation</th></tr></thead>
+        <tbody>
+          <tr><td><code>put(message)</code></td><td><span class="badge badge-write">WRITE</span></td></tr>
+          <tr><td><code>put_messages(messages)</code></td><td><span class="badge badge-write">WRITE</span></td></tr>
+          <tr><td><code>get(input)</code></td><td><span class="badge badge-read">READ</span></td></tr>
+          <tr><td><code>get_all()</code></td><td><span class="badge badge-read">READ</span></td></tr>
+          <tr><td><code>reset()</code></td><td><span class="badge badge-write">WRITE</span> drop_reason="reset"</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="integration-card">
+      <div class="integration-title">
+        Letta
+        <span class="integration-extra">memorylens[letta]</span>
+      </div>
+      <div class="integration-class">Patches: Letta client agents.blocks (letta-client)</div>
+      <table>
+        <thead><tr><th>Method</th><th>Operation</th></tr></thead>
+        <tbody>
+          <tr><td><code>agents.blocks.retrieve()</code></td><td><span class="badge badge-read">READ</span></td></tr>
+          <tr><td><code>agents.blocks.update()</code></td><td><span class="badge badge-update">UPDATE</span></td></tr>
+          <tr><td><code>agents.blocks.delete()</code></td><td><span class="badge badge-write">WRITE</span> drop_reason="explicit_delete"</td></tr>
+          <tr><td><code>agents.blocks.list()</code></td><td><span class="badge badge-read">READ</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="integration-card">
+      <div class="integration-title">
+        Zep
+        <span class="integration-extra">memorylens[zep]</span>
+      </div>
+      <div class="integration-class">Patches: Zep client memory methods (zep-python)</div>
+      <table>
+        <thead><tr><th>Method</th><th>Operation</th></tr></thead>
+        <tbody>
+          <tr><td><code>memory.add(session_id, messages)</code></td><td><span class="badge badge-write">WRITE</span></td></tr>
+          <tr><td><code>memory.get(session_id)</code></td><td><span class="badge badge-read">READ</span></td></tr>
+          <tr><td><code>memory.search(session_id, payload)</code></td><td><span class="badge badge-read">READ</span> (captures scores)</td></tr>
+          <tr><td><code>memory.delete(session_id)</code></td><td><span class="badge badge-write">WRITE</span> drop_reason="session_delete"</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h3>Auto-Instrumentation Shorthand</h3>
+  <pre><code><span class="cm"># Initialize all integrations in one call:</span>
+memorylens.init(instrument=[<span class="st">"langchain"</span>, <span class="st">"mem0"</span>, <span class="st">"llamaindex"</span>])
+
+<span class="cm"># Or initialize individual instrumentors explicitly:</span>
+<span class="kw">from</span> memorylens.integrations.langchain <span class="kw">import</span> LangChainInstrumentor
+LangChainInstrumentor().instrument()
+
+<span class="cm"># To stop instrumentation:</span>
+<span class="kw">from</span> memorylens.integrations.mem0 <span class="kw">import</span> Mem0Instrumentor
+inst = Mem0Instrumentor()
+inst.instrument()
+<span class="cm"># ... later ...</span>
+inst.uninstrument()</code></pre>
+
+  <p>If a framework is not installed, a clear error is raised: <em>"LangChain not found. Install with: pip install memorylens[langchain]"</em>.</p>
+</div>
+
+<!-- ════════════════════ 06 WEB DASHBOARD ════════════════════ -->
+<div class="section page-break">
+  <div class="section-label"><span class="section-num">06</span> Web Dashboard</div>
+  <h2>Web Dashboard — <code>memorylens._ui</code></h2>
+
+  <p>The MemoryLens web dashboard is a local developer tool that provides a browser-based interface for trace inspection. It launches with a single CLI command and reads from the same SQLite database that the SDK writes to. It is available as an optional extra: <code>pip install memorylens[ui]</code>.</p>
+
+  <h3>Technology Stack</h3>
+  <ul>
+    <li><strong>FastAPI</strong> — async Python web framework; app factory pattern for testability</li>
+    <li><strong>Jinja2</strong> — server-side HTML templating; templates live in <code>_ui/templates/</code></li>
+    <li><strong>htmx</strong> — loaded via CDN; enables AJAX interactions without JavaScript code</li>
+    <li><strong>TailwindCSS</strong> — loaded via CDN; utility-first styling, dark theme support</li>
+    <li><strong>uvicorn</strong> — ASGI server; binds to <code>127.0.0.1</code> only (local-only access)</li>
+  </ul>
+
+  <h3>App Factory</h3>
+  <pre><code><span class="cm"># src/memorylens/_ui/server.py</span>
+<span class="kw">def</span> <span class="fn">create_app</span>(db_path: <span class="tp">str</span> = _DEFAULT_DB, ingest: <span class="tp">bool</span> = <span class="kw">False</span>) -> <span class="tp">FastAPI</span>:
+    app = FastAPI(title=<span class="st">"MemoryLens"</span>, docs_url=<span class="kw">None</span>, redoc_url=<span class="kw">None</span>)
+    <span class="cm"># Mount static files at /static</span>
+    <span class="cm"># Configure Jinja2 templates</span>
+    <span class="cm"># Create SQLiteExporter(db_path) — shared via app.state</span>
+    <span class="cm"># Register: create_trace_routes(app)</span>
+    <span class="cm"># Register: create_compression_routes(app)</span>
+    <span class="kw">if</span> ingest:
+        <span class="cm"># Register: create_ingest_routes(app)  — OTLP HTTP receiver</span>
+    <span class="kw">return</span> app
+
+<span class="kw">def</span> <span class="fn">run</span>(db_path, port=<span class="nm">8000</span>, ingest=<span class="kw">False</span>) -> <span class="kw">None</span>:
+    app = create_app(db_path, ingest)
+    uvicorn.run(app, host=<span class="st">"127.0.0.1"</span>, port=port, log_level=<span class="st">"warning"</span>)</code></pre>
+
+  <h3>Content Negotiation</h3>
+  <p>All filterable endpoints serve both full HTML pages and htmx partials from the same URL. htmx automatically sends an <code>HX-Request: true</code> header on all requests it triggers. The routes check for this header (or use separate <code>/api/</code> paths for partials) and return the appropriate template.</p>
+
+  <h3>API Endpoints</h3>
+  <table>
+    <thead><tr><th>Method</th><th>Path</th><th>Template / Returns</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>GET</td><td><code>/</code></td><td>Redirect to <code>/traces</code></td><td>Root redirect</td></tr>
+      <tr><td>GET</td><td><code>/traces</code></td><td><code>traces_list.html</code></td><td>Full trace list page</td></tr>
+      <tr><td>GET</td><td><code>/api/traces</code></td><td><code>partials/trace_table.html</code></td><td>htmx-filtered table rows</td></tr>
+      <tr><td>GET</td><td><code>/traces/{trace_id}</code></td><td><code>traces_detail.html</code></td><td>Trace detail with timeline</td></tr>
+      <tr><td>GET</td><td><code>/traces/{trace_id}/retrieval</code></td><td><code>retrieval_debug.html</code></td><td>Retrieval debugger (READ spans only)</td></tr>
+      <tr><td>GET</td><td><code>/traces/{trace_id}/compression</code></td><td><code>compression_audit.html</code></td><td>Compression audit (COMPRESS spans only)</td></tr>
+      <tr><td>POST</td><td><code>/api/traces/{trace_id}/audit</code></td><td>Redirect</td><td>Run compression audit, redirect back</td></tr>
+      <tr><td>POST</td><td><code>/v1/traces</code></td><td>JSON <code>{}</code></td><td>OTLP HTTP/JSON ingest (optional)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Trace List View (<code>/traces</code>)</h3>
+  <p>The main landing page. A filterable, paginated table of all memory operation traces.</p>
+  <ul>
+    <li><strong>Filter bar:</strong> search input (debounced 300ms), operation dropdown, status dropdown, agent ID input</li>
+    <li><strong>Table columns:</strong> Trace ID, Operation (color-coded badge), Status (dot indicator), Duration, Agent, Session, Content Preview, Time (relative)</li>
+    <li><strong>Error rows</strong> receive a subtle red background tint</li>
+    <li><strong>Pagination:</strong> "Showing 1–50 of 247" with Prev/Next using htmx offset parameter</li>
+    <li><strong>htmx live tail:</strong> when <code>--ingest</code> is active, <code>hx-trigger="every 2s"</code> polls for new traces</li>
+  </ul>
+
+  <h3>Trace Detail View (<code>/traces/{trace_id}</code>)</h3>
+  <p>Deep-dive into a single span. Two-column layout:</p>
+  <ul>
+    <li><strong>Left column:</strong> span timeline bar (colored by operation type), input/output content blocks (monospace), error block (red-tinted, only for error/dropped spans)</li>
+    <li><strong>Right column:</strong> attributes panel split into standard fields and custom attributes; action buttons including "Export JSON" and context-specific debug links ("Debug Retrieval" for READ spans, "Debug Compression" for COMPRESS spans)</li>
+  </ul>
+
+  <h3>Retrieval Debugger (<code>/traces/{trace_id}/retrieval</code>)</h3>
+  <p>The flagship debugging view for READ operations. Visualizes exactly why a retrieval returned or missed specific memories:</p>
+  <ul>
+    <li><strong>Query section:</strong> search query text + parameters panel (backend, top_k, threshold, results_count)</li>
+    <li><strong>Score visualization:</strong> horizontal bars for every candidate memory scaled by similarity score (0.0–1.0). Green bars with "RETURNED" badge above threshold; red bars with "FILTERED" badge below. A dashed yellow vertical threshold line runs through all bars</li>
+    <li><strong>Near-miss callout:</strong> amber box that appears when candidates scored within 0.10 of the threshold, with suggested actions</li>
+    <li><strong>Data source:</strong> all data comes from existing READ span attributes (<code>scores</code>, <code>threshold</code>, <code>top_k</code>, <code>results_count</code>) — no new SDK changes required</li>
+  </ul>
+
+  <h3>OTLP Ingest Endpoint (<code>POST /v1/traces</code>)</h3>
+  <p>When started with <code>--ingest</code>, the dashboard doubles as a lightweight OTLP HTTP/JSON collector. This allows agent applications to point their <code>OTEL_EXPORTER_OTLP_ENDPOINT</code> directly at the dashboard:</p>
+
+  <pre><code><span class="cm"># Agent configuration for live ingest:</span>
+<span class="kw">export</span> OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:8000
+<span class="kw">export</span> OTEL_EXPORTER_OTLP_PROTOCOL=http/json</code></pre>
+
+  <p>The ingest handler parses <code>ExportTraceServiceRequest</code> JSON, iterates <code>resourceSpans[].scopeSpans[].spans[]</code>, skips spans without a <code>memorylens.operation</code> attribute, maps OTel attributes back to <code>MemorySpan</code> fields, and writes to SQLite. The UI then reflects new traces within the live poll interval.</p>
+
+  <p><strong>HTTP/JSON only</strong> (no gRPC) — gRPC would require protobuf compilation on the server side, adding unnecessary complexity for a local dev tool.</p>
+
+  <h3>File Structure</h3>
+  <div class="file-tree">
+    <span class="dir">src/memorylens/_ui/</span><br>
+    ├── <span class="file">__init__.py</span><br>
+    ├── <span class="file">server.py</span>              <span class="comment">  # FastAPI app factory + uvicorn launcher</span><br>
+    ├── <span class="dir">api/</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">traces.py</span>         <span class="comment">  # page routes + filtered API endpoints</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">compression.py</span>    <span class="comment">  # compression audit routes</span><br>
+    │&nbsp;&nbsp;&nbsp;└── <span class="file">ingest.py</span>         <span class="comment">  # OTLP HTTP/JSON receiver</span><br>
+    ├── <span class="dir">templates/</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">base.html</span>         <span class="comment">  # layout: nav, Tailwind CDN, htmx script</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">traces_list.html</span>  <span class="comment">  # trace list page</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">traces_detail.html</span><span class="comment">  # single trace timeline view</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">retrieval_debug.html</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">compression_audit.html</span><br>
+    │&nbsp;&nbsp;&nbsp;└── <span class="dir">partials/</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">trace_table.html</span>  <span class="comment"># htmx partial: filterable rows</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">span_timeline.html</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">score_chart.html</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="file">sentence_diff.html</span><span class="comment"> # compression audit partial</span><br>
+    └── <span class="dir">static/</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;└── <span class="file">app.css</span>            <span class="comment">  # custom styles (on top of Tailwind)</span>
+  </div>
+</div>
+
+<!-- ════════════════════ 07 COMPRESSION AUDITOR ════════════════════ -->
+<div class="section page-break">
+  <div class="section-label"><span class="section-num">07</span> Compression Auditor</div>
+  <h2>Compression Auditor — <code>memorylens._audit</code></h2>
+
+  <p>The Compression Auditor performs offline semantic analysis of COMPRESS spans, determining what information was preserved and what was lost during memory summarization. The SDK already captures <code>input_content</code> (pre-compression) and <code>output_content</code> (post-compression) on COMPRESS spans — this feature uses those fields to compute sentence-level semantic similarity.</p>
+
+  <div class="callout callout-success">
+    <div class="callout-label">Design Principle: Zero Runtime Overhead</div>
+    <p>Analysis runs as a post-hoc CLI command or UI action, never in the instrumentation hot path. This maintains the &lt;2ms p99 overhead guarantee.</p>
+  </div>
+
+  <h3>Data Model</h3>
+  <pre><code><span class="kw">@dataclass</span>(frozen=<span class="kw">True</span>)
+<span class="kw">class</span> <span class="tp">SentenceAnalysis</span>:
+    text: <span class="tp">str</span>                <span class="cm"># the original pre-compression sentence</span>
+    best_match_score: <span class="tp">float</span>  <span class="cm"># max cosine similarity to any post-content sentence</span>
+    status: <span class="tp">str</span>              <span class="cm"># "preserved" (>= 0.7) or "lost" (< 0.7)</span>
+
+<span class="kw">@dataclass</span>(frozen=<span class="kw">True</span>)
+<span class="kw">class</span> <span class="tp">CompressionAudit</span>:
+    span_id: <span class="tp">str</span>
+    semantic_loss_score: <span class="tp">float</span>   <span class="cm"># 1.0 - mean(best_match_scores). 0=no loss, 1=total loss</span>
+    compression_ratio: <span class="tp">float</span>     <span class="cm"># len(post_content) / len(pre_content)</span>
+    pre_sentence_count: <span class="tp">int</span>
+    post_sentence_count: <span class="tp">int</span>
+    sentences: <span class="tp">list[SentenceAnalysis]</span>
+    scorer_backend: <span class="tp">str</span>         <span class="cm"># "local" or "openai"</span></code></pre>
+
+  <h3>Scorer Backends</h3>
+
+  <p>The <code>ScorerBackend</code> protocol requires a single method: <code>embed(texts: list[str]) -> list[list[float]]</code>. Three implementations are provided:</p>
+
+  <table>
+    <thead><tr><th>Scorer</th><th>Dependency</th><th>Model</th><th>API Key</th><th>Use Case</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>LocalScorer</strong></td>
+        <td><code>sentence-transformers</code></td>
+        <td><code>all-MiniLM-L6-v2</code> (~80MB)</td>
+        <td>None</td>
+        <td>Default; works fully offline</td>
+      </tr>
+      <tr>
+        <td><strong>OpenAIScorer</strong></td>
+        <td><code>openai</code> (user-installed)</td>
+        <td><code>text-embedding-3-small</code></td>
+        <td><code>OPENAI_API_KEY</code></td>
+        <td>Higher quality embeddings, cloud-based</td>
+      </tr>
+      <tr>
+        <td><strong>MockScorer</strong></td>
+        <td>None (stdlib only)</td>
+        <td>MD5 hash-based deterministic embeddings</td>
+        <td>None</td>
+        <td>Fast, deterministic testing</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <pre><code><span class="cm"># Factory function for creating scorers:</span>
+<span class="kw">def</span> <span class="fn">create_scorer</span>(name: <span class="tp">str</span>) -> <span class="tp">ScorerBackend</span>:
+    <span class="kw">match</span> name:
+        <span class="kw">case</span> <span class="st">"local"</span>:  <span class="kw">return</span> <span class="tp">LocalScorer</span>()
+        <span class="kw">case</span> <span class="st">"openai"</span>: <span class="kw">return</span> <span class="tp">OpenAIScorer</span>()
+        <span class="kw">case</span> <span class="st">"mock"</span>:   <span class="kw">return</span> <span class="tp">MockScorer</span>()</code></pre>
+
+  <h3>Compression Analysis Algorithm</h3>
+
+  <p>The <code>CompressionAnalyzer.analyze(span_id, pre_content, post_content)</code> method executes the following steps:</p>
+
+  <ol>
+    <li><strong>Sentence splitting:</strong> split both <code>pre_content</code> and <code>post_content</code> into sentences using a regex-based splitter (splits on <code>.!?</code> followed by whitespace or end-of-string, with abbreviation handling)</li>
+    <li><strong>Batch embedding:</strong> concatenate all pre and post sentences into a single list and embed in one batch call — minimizing API calls for the OpenAI backend</li>
+    <li><strong>Similarity matrix:</strong> for each pre-sentence, compute cosine similarity against every post-sentence using the formula: <code>dot(a, b) / (||a|| × ||b||)</code></li>
+    <li><strong>Best match scoring:</strong> take the maximum similarity score across all post-sentences as the <code>best_match_score</code> for each pre-sentence</li>
+    <li><strong>Classification:</strong> score ≥ 0.7 → "preserved"; score &lt; 0.7 → "lost"</li>
+    <li><strong>Loss score:</strong> <code>semantic_loss_score = 1.0 − mean(best_match_scores)</code> — clamped to [0, 1]</li>
+    <li><strong>Compression ratio:</strong> <code>len(post_content) / len(pre_content)</code> (character-level)</li>
+  </ol>
+
+  <h3>Loss Score Classification</h3>
+  <table>
+    <thead><tr><th>Score Range</th><th>Classification</th><th>Visual</th></tr></thead>
+    <tbody>
+      <tr><td>0.0 – 0.29</td><td>Low loss</td><td>Green, checkmark ✓</td></tr>
+      <tr><td>0.30 – 0.60</td><td>Moderate loss</td><td>Amber, warning ⚠</td></tr>
+      <tr><td>0.61 – 1.0</td><td>High loss</td><td>Red, X ✗</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Compression Audit UI View (<code>/traces/{trace_id}/compression</code>)</h3>
+  <ul>
+    <li><strong>Header:</strong> breadcrumb navigation, span metadata</li>
+    <li><strong>Summary card:</strong> loss score with color coding, compression ratio, preserved/lost sentence counts</li>
+    <li><strong>Sentence diff:</strong> list of all pre-compression sentences. Preserved sentences show a green checkmark and a score bar; lost sentences show a red X. Score bars use the same visual style as the Retrieval Debugger. Preserved sentences additionally show the best-matching post-content sentence in subtle text below</li>
+    <li><strong>Post-compression content:</strong> full compressed text in a code box</li>
+    <li><strong>"Run Audit" state:</strong> if no audit exists, a button fires <code>POST /api/traces/{trace_id}/audit?scorer=local</code> which runs the analysis and redirects back. The <code>scorer</code> parameter selects the backend (default: <code>mock</code> in the web UI; <code>local</code> or <code>openai</code> via CLI)</li>
+  </ul>
+</div>
+
+<!-- ════════════════════ 08 COST ATTRIBUTION ════════════════════ -->
+<div class="section page-break">
+  <div class="section-label"><span class="section-num">08</span> Cost Attribution</div>
+  <h2>Cost Attribution — <code>memorylens._cost</code></h2>
+
+  <p>Cost attribution tracks token counts and dollar costs per memory operation. Like the Compression Auditor, it is implemented as offline enrichment — token data is captured as span attributes during instrumentation, and a CLI command computes costs using a configurable pricing model and writes <code>cost_usd</code> back into the span's attributes via <code>update_span_attributes()</code>.</p>
+
+  <div class="callout callout-info">
+    <div class="callout-label">No New Dependencies</div>
+    <p>Cost attribution uses only Python stdlib (json, pathlib). There are no new optional extras for this feature.</p>
+  </div>
+
+  <h3>Capturing Token Data</h3>
+  <p>Token data is added as span attributes during instrumentation, either via decorator kwargs or manually:</p>
+
+  <pre><code><span class="cm"># Via decorator:</span>
+<span class="kw">@instrument_write</span>(backend=<span class="st">"mem0"</span>, tokens_in=<span class="nm">150</span>, tokens_out=<span class="nm">0</span>, model=<span class="st">"gpt-4o-mini"</span>)
+<span class="kw">def</span> <span class="fn">store</span>(...): ...
+
+<span class="cm"># Via manual span creation:</span>
+<span class="kw">with</span> tracer.start_span(<span class="tp">MemoryOperation.COMPRESS</span>) <span class="kw">as</span> span:
+    span.set_attribute(<span class="st">"tokens_in"</span>, <span class="nm">1200</span>)
+    span.set_attribute(<span class="st">"tokens_out"</span>, <span class="nm">300</span>)
+    span.set_attribute(<span class="st">"model"</span>, <span class="st">"gpt-4o-mini"</span>)</code></pre>
+
+  <h3>Default Pricing Table</h3>
+  <table>
+    <thead><tr><th>Model</th><th>Input ($/token)</th><th>Output ($/token)</th></tr></thead>
+    <tbody>
+      <tr><td><code>gpt-4o</code></td><td>$0.0000025</td><td>$0.00001</td></tr>
+      <tr><td><code>gpt-4o-mini</code></td><td>$0.00000015</td><td>$0.0000006</td></tr>
+      <tr><td><code>gpt-4-turbo</code></td><td>$0.00001</td><td>$0.00003</td></tr>
+      <tr><td><code>claude-3-opus</code></td><td>$0.000015</td><td>$0.000075</td></tr>
+      <tr><td><code>claude-3-sonnet</code></td><td>$0.000003</td><td>$0.000015</td></tr>
+      <tr><td><code>claude-3-haiku</code></td><td>$0.00000025</td><td>$0.00000125</td></tr>
+      <tr><td><code>text-embedding-3-small</code></td><td>$0.00000002</td><td>$0.0</td></tr>
+      <tr><td><code>text-embedding-3-large</code></td><td>$0.00000013</td><td>$0.0</td></tr>
+    </tbody>
+  </table>
+
+  <h3>User Pricing Override</h3>
+  <p>Users override or extend pricing via <code>~/.memorylens/pricing.json</code>:</p>
+  <pre><code>{
+    <span class="st">"my-fine-tuned-model"</span>: {<span class="st">"input"</span>: <span class="nm">0.00001</span>, <span class="st">"output"</span>: <span class="nm">0.00003</span>}
+}</code></pre>
+  <p>The <code>load_pricing()</code> function merges user entries over defaults. User entries take precedence.</p>
+
+  <h3>Cost Enricher</h3>
+  <pre><code><span class="kw">class</span> <span class="tp">CostEnricher</span>:
+    <span class="kw">def</span> <span class="fn">enrich_span</span>(self, attrs: <span class="tp">dict[str, Any]</span>) -> <span class="tp">dict | None</span>:
+        <span class="cm"># Returns None if no token data present</span>
+        <span class="cm"># Returns {"cost_usd": 0.0, "_cost_warning": "..."} for unknown models</span>
+        <span class="cm"># Returns {"cost_usd": round(cost, 10)} on success</span>
+        cost = tokens_in * pricing[model][<span class="st">"input"</span>] + tokens_out * pricing[model][<span class="st">"output"</span>]</code></pre>
+
+  <h3>update_span_attributes Mechanism</h3>
+  <p>Cost enrichment writes <code>cost_usd</code> directly into the span's <code>attributes</code> JSON field in SQLite, merging without overwriting other attributes:</p>
+  <pre><code><span class="cm"># SQLiteExporter method:</span>
+<span class="kw">def</span> <span class="fn">update_span_attributes</span>(self, span_id: <span class="tp">str</span>, new_attrs: <span class="tp">dict</span>) -> <span class="kw">None</span>:
+    current = json.loads(row[<span class="st">"attributes"</span>])
+    current.update(new_attrs)  <span class="cm"># merge</span>
+    <span class="cm"># UPDATE spans SET attributes = ? WHERE span_id = ?</span></code></pre>
+
+  <h3>UI Integration</h3>
+  <p>No new pages are added. Cost data surfaces in existing views:</p>
+  <ul>
+    <li><strong>Trace list:</strong> a "Cost" column showing <code>$0.0012</code> or <code>-</code> if no cost data, read from <code>span.attributes.cost_usd</code></li>
+    <li><strong>Trace detail header:</strong> cost shown after duration — <code>12ms · $0.0012</code> — only when <code>cost_usd</code> is present</li>
+  </ul>
+</div>
+
+<!-- ════════════════════ 09 CLI REFERENCE ════════════════════ -->
+<div class="section page-break">
+  <div class="section-label"><span class="section-num">09</span> CLI Reference</div>
+  <h2>CLI Reference — <code>memorylens</code></h2>
+
+  <p>The CLI is built with <strong>Typer</strong> and <strong>Rich</strong>. All commands read from the local SQLite database by default. Most commands support <code>--json</code> for machine-readable output.</p>
+
+  <h3>memorylens init</h3>
+  <div class="pre-label">Command</div>
+  <div class="cli-block">
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens init</span><br>
+    <span class="cli-comment"># Creates ~/.memorylens/ directory</span><br>
+    <span class="cli-comment"># Output: "Initialized MemoryLens at /Users/you/.memorylens"</span>
+  </div>
+
+  <h3>memorylens ui</h3>
+  <div class="cli-block">
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens ui</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens ui</span> <span class="cli-flag">--port</span> <span class="cli-arg">8080</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens ui</span> <span class="cli-flag">--db-path</span> <span class="cli-arg">./my-traces.db</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens ui</span> <span class="cli-flag">--ingest</span>  <span class="cli-comment"> # also accept OTLP HTTP at /v1/traces</span>
+  </div>
+  <p>Requires <code>memorylens[ui]</code>. Launches web dashboard at <code>http://127.0.0.1:8000</code>.</p>
+
+  <h3>memorylens traces</h3>
+  <div class="cli-block">
+    <span class="cli-comment"># List traces</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens traces list</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens traces list</span> <span class="cli-flag">--operation</span> <span class="cli-arg">memory.write</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens traces list</span> <span class="cli-flag">--status</span> <span class="cli-arg">error</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens traces list</span> <span class="cli-flag">--last</span> <span class="cli-arg">1h</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens traces list</span> <span class="cli-flag">--agent-id</span> <span class="cli-arg">support-bot</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens traces list</span> <span class="cli-flag">--session-id</span> <span class="cli-arg">sess-123</span><br><br>
+    <span class="cli-comment"># Inspect a single trace</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens traces show</span> <span class="cli-arg">&lt;trace-id&gt;</span><br><br>
+    <span class="cli-comment"># Live tail (streaming)</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens traces tail</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens traces tail</span> <span class="cli-flag">--operation</span> <span class="cli-arg">memory.read</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens traces tail</span> <span class="cli-flag">--min-duration</span> <span class="cli-arg">100ms</span><br><br>
+    <span class="cli-comment"># Export as JSONL</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens traces export</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens traces export</span> <span class="cli-flag">--last</span> <span class="cli-arg">24h</span> <span class="cli-flag">-o</span> <span class="cli-arg">traces.jsonl</span>
+  </div>
+
+  <h3>memorylens stats</h3>
+  <div class="cli-block">
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens stats</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens stats</span> <span class="cli-flag">--last</span> <span class="cli-arg">7d</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens stats</span> <span class="cli-flag">--group-by</span> <span class="cli-arg">operation</span>
+  </div>
+  <p>Shows aggregate statistics: total spans, error rate, p50/p95/p99 duration, breakdown by operation and status.</p>
+
+  <h3>memorylens config</h3>
+  <div class="cli-block">
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens config show</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens config set</span> <span class="cli-arg">&lt;key&gt;</span> <span class="cli-arg">&lt;value&gt;</span>
+  </div>
+
+  <h3>memorylens audit</h3>
+  <div class="cli-block">
+    <span class="cli-comment"># Audit all unaudited COMPRESS spans</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens audit compress</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens audit compress</span> <span class="cli-flag">--trace-id</span> <span class="cli-arg">abc123</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens audit compress</span> <span class="cli-flag">--scorer</span> <span class="cli-arg">openai</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens audit compress</span> <span class="cli-flag">--force</span>  <span class="cli-comment"> # re-audit already-audited spans</span><br><br>
+    <span class="cli-comment"># Show detailed audit for a specific span</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens audit show</span> <span class="cli-arg">&lt;span_id&gt;</span><br><br>
+    <span class="cli-comment"># List all audit results</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens audit list</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens audit list</span> <span class="cli-flag">--min-loss</span> <span class="cli-arg">0.3</span>
+  </div>
+
+  <h3>memorylens cost</h3>
+  <div class="cli-block">
+    <span class="cli-comment"># Enrich spans with cost_usd</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens cost enrich</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens cost enrich</span> <span class="cli-flag">--trace-id</span> <span class="cli-arg">abc123</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens cost enrich</span> <span class="cli-flag">--force</span>   <span class="cli-comment"> # recalculate all</span><br><br>
+    <span class="cli-comment"># Cost report</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens cost report</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens cost report</span> <span class="cli-flag">--group-by</span> <span class="cli-arg">agent_id</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens cost report</span> <span class="cli-flag">--group-by</span> <span class="cli-arg">session_id</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens cost report</span> <span class="cli-flag">--group-by</span> <span class="cli-arg">operation</span><br><br>
+    <span class="cli-comment"># Manage pricing</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens cost pricing</span><br>
+    <span class="cli-prompt">$ </span><span class="cli-cmd">memorylens cost pricing</span> <span class="cli-flag">--set</span> <span class="cli-arg">gpt-4o-mini.input=0.0000002</span>
+  </div>
+
+  <h3>Cost Report Output Format</h3>
+  <pre><code>Cost Report (grouped by operation)
+
+OPERATION         SPANS   TOKENS IN   TOKENS OUT   TOTAL COST
+memory.write        45      12,300        0          $0.0018
+memory.read         38       8,400      2,100        $0.0031
+memory.compress     12       6,800      1,200        $0.0015
+
+Total: 95 spans, 27,500 tokens in, 3,300 tokens out, $0.0064</code></pre>
+
+  <h3>Audit Output Format</h3>
+  <pre><code>Analyzing 12 COMPRESS spans...
+[████████████████████████████████] 12/12
+
+Results:
+SPAN ID      LOSS SCORE   RATIO   PRESERVED   LOST    STATUS
+a1b2c3d4     0.12         0.35    8/9         1/9     ✓ low loss
+e5f6g7h8     0.45         0.28    4/7         3/7     ⚠ moderate loss
+i9j0k1l2     0.78         0.15    2/8         6/8     ✗ high loss
+
+Summary: 12 spans audited. 2 with moderate loss, 1 with high loss.</code></pre>
+</div>
+
+<!-- ════════════════════ 10 PUBLIC API ════════════════════ -->
+<div class="section page-break">
+  <div class="section-label"><span class="section-num">10</span> Public API Reference</div>
+  <h2>Public API Reference</h2>
+
+  <p>MemoryLens exposes exactly <strong>8 public symbols</strong> from the top-level <code>memorylens</code> package. Everything else is considered internal (prefixed with <code>_</code>) and may change without notice.</p>
+
+  <pre><code><span class="kw">from</span> memorylens <span class="kw">import</span> (
+    init, shutdown,
+    instrument_write, instrument_read, instrument_compress, instrument_update,
+    context, get_tracer,
+)</code></pre>
+
+  <div class="api-card">
+    <div class="api-card-header">
+      <span class="api-symbol">init()</span>
+      <span class="api-kind">function</span>
+    </div>
+    <div class="api-card-body">
+      <p>Initialize MemoryLens. Call once at application startup. Configures the <code>TracerProvider</code>, builds exporters, and optionally triggers auto-instrumentation.</p>
+      <div class="api-sig">def init(
+    service_name: str | None = None,
+    exporter: str | None = None,          # "sqlite" | "otlp" | "jsonl"
+    exporters: list[str] | None = None,   # multiple exporters
+    otlp_endpoint: str | None = None,
+    instrument: list[str] | None = None,  # ["langchain", "mem0", ...]
+    capture_content: bool | None = None,
+    sample_rate: float | None = None,     # 0.0–1.0
+    db_path: str | None = None,           # override SQLite path
+) -> None</div>
+      <p>With no arguments, defaults to SQLite storage at <code>~/.memorylens/traces.db</code>. Environment variables override all kwargs.</p>
+    </div>
+  </div>
+
+  <div class="api-card">
+    <div class="api-card-header">
+      <span class="api-symbol">shutdown()</span>
+      <span class="api-kind">function</span>
+    </div>
+    <div class="api-card-body">
+      <p>Flush all pending spans in the processor queue and shut down all registered processors and exporters. Call at application exit to ensure no spans are lost.</p>
+      <div class="api-sig">def shutdown() -> None</div>
+    </div>
+  </div>
+
+  <div class="api-card">
+    <div class="api-card-header">
+      <span class="api-symbol">instrument_write</span>
+      <span class="api-kind">decorator</span>
+    </div>
+    <div class="api-card-body">
+      <p>Decorator that traces memory write operations. Creates a <code>MemoryOperation.WRITE</code> span around the decorated function.</p>
+      <div class="api-sig">def instrument_write(
+    backend: str | None = None,
+    capture_content: bool | None = None,
+    **kwargs: Any,   # any key=value becomes a span attribute
+) -> Callable[[F], F]</div>
+      <pre><code><span class="kw">@instrument_write</span>(backend=<span class="st">"mem0"</span>, capture_content=<span class="kw">True</span>)
+<span class="kw">def</span> <span class="fn">store_user_preference</span>(user_id: <span class="tp">str</span>, content: <span class="tp">str</span>) -> <span class="tp">bool</span>: ...</code></pre>
+    </div>
+  </div>
+
+  <div class="api-card">
+    <div class="api-card-header">
+      <span class="api-symbol">instrument_read</span>
+      <span class="api-kind">decorator</span>
+    </div>
+    <div class="api-card-body">
+      <p>Decorator that traces memory read/retrieval operations. Creates a <code>MemoryOperation.READ</code> span.</p>
+      <div class="api-sig">def instrument_read(
+    backend: str | None = None,
+    capture_content: bool | None = None,
+    **kwargs: Any,   # top_k, threshold, etc.
+) -> Callable[[F], F]</div>
+      <pre><code><span class="kw">@instrument_read</span>(backend=<span class="st">"mem0"</span>, top_k=<span class="nm">5</span>, threshold=<span class="nm">0.7</span>)
+<span class="kw">def</span> <span class="fn">search_memories</span>(query: <span class="tp">str</span>) -> <span class="tp">list[Memory]</span>: ...</code></pre>
+    </div>
+  </div>
+
+  <div class="api-card">
+    <div class="api-card-header">
+      <span class="api-symbol">instrument_compress</span>
+      <span class="api-kind">decorator</span>
+    </div>
+    <div class="api-card-body">
+      <p>Decorator that traces memory compression/summarization operations. Creates a <code>MemoryOperation.COMPRESS</code> span. The <code>input_content</code> and <code>output_content</code> of COMPRESS spans are used by the Compression Auditor.</p>
+      <div class="api-sig">def instrument_compress(
+    model: str | None = None,
+    capture_content: bool | None = None,
+    **kwargs: Any,
+) -> Callable[[F], F]</div>
+      <pre><code><span class="kw">@instrument_compress</span>(model=<span class="st">"gpt-4o-mini"</span>)
+<span class="kw">def</span> <span class="fn">summarize_conversation</span>(messages: <span class="tp">list[str]</span>) -> <span class="tp">str</span>: ...</code></pre>
+    </div>
+  </div>
+
+  <div class="api-card">
+    <div class="api-card-header">
+      <span class="api-symbol">instrument_update</span>
+      <span class="api-kind">decorator</span>
+    </div>
+    <div class="api-card-body">
+      <p>Decorator that traces memory update operations (merge, replace, or append to an existing memory entry). Creates a <code>MemoryOperation.UPDATE</code> span.</p>
+      <div class="api-sig">def instrument_update(
+    backend: str | None = None,
+    capture_content: bool | None = None,
+    **kwargs: Any,   # update_type, memory_key, etc.
+) -> Callable[[F], F]</div>
+    </div>
+  </div>
+
+  <div class="api-card">
+    <div class="api-card-header">
+      <span class="api-symbol">context()</span>
+      <span class="api-kind">context manager factory</span>
+    </div>
+    <div class="api-card-body">
+      <p>Creates a <code>MemoryContext</code> context manager that attaches agent/session/user metadata to all spans created within the <code>with</code> block. Uses <code>ContextVar</code> — safe to nest and async-safe.</p>
+      <div class="api-sig">def context(
+    agent_id: str | None = None,
+    session_id: str | None = None,
+    user_id: str | None = None,
+) -> MemoryContext</div>
+      <pre><code><span class="kw">with</span> memorylens.context(agent_id=<span class="st">"bot"</span>, session_id=<span class="st">"sess-1"</span>, user_id=<span class="st">"u-42"</span>):
+    store_memory(content)
+    results = search_memories(query)
+<span class="cm"># All spans above have agent_id, session_id, user_id set</span></code></pre>
+    </div>
+  </div>
+
+  <div class="api-card">
+    <div class="api-card-header">
+      <span class="api-symbol">get_tracer()</span>
+      <span class="api-kind">function</span>
+    </div>
+    <div class="api-card-body">
+      <p>Escape hatch for manual span creation when the decorators are not sufficient. Returns a <code>Tracer</code> instance from the global <code>TracerProvider</code>.</p>
+      <div class="api-sig">def get_tracer(name: str) -> Tracer</div>
+      <pre><code>tracer = memorylens.get_tracer(<span class="st">"my.module"</span>)
+<span class="kw">with</span> tracer.start_span(<span class="tp">MemoryOperation.WRITE</span>) <span class="kw">as</span> span:
+    span.set_attribute(<span class="st">"memory_key"</span>, <span class="st">"user_prefs"</span>)
+    span.set_content(input_content=content)
+    result = do_write(content)
+    span.set_content(output_content=<span class="tp">str</span>(result))</code></pre>
+    </div>
+  </div>
+
+  <h3>Environment Variable Overrides</h3>
+  <table class="env-table">
+    <thead><tr><th>Variable</th><th>Effect</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>MEMORYLENS_EXPORTER</code></td>
+        <td>Override exporter selection; takes precedence over <code>init()</code> kwargs</td>
+        <td><code>sqlite</code>, <code>otlp</code>, <code>jsonl</code></td>
+      </tr>
+      <tr>
+        <td><code>MEMORYLENS_CAPTURE_CONTENT</code></td>
+        <td>PII safety toggle — disable content capture in production</td>
+        <td><code>false</code></td>
+      </tr>
+      <tr>
+        <td><code>MEMORYLENS_SAMPLE_RATE</code></td>
+        <td>Sampling rate; reduces storage and overhead</td>
+        <td><code>0.1</code> (10%)</td>
+      </tr>
+      <tr>
+        <td><code>OTEL_EXPORTER_OTLP_ENDPOINT</code></td>
+        <td>OTLP collector URL</td>
+        <td><code>http://localhost:4317</code></td>
+      </tr>
+      <tr>
+        <td><code>OTEL_EXPORTER_OTLP_HEADERS</code></td>
+        <td>Auth headers for OTLP collector</td>
+        <td><code>x-api-key=abc123</code></td>
+      </tr>
+      <tr>
+        <td><code>OTEL_EXPORTER_OTLP_PROTOCOL</code></td>
+        <td>OTLP protocol selection</td>
+        <td><code>http/json</code></td>
+      </tr>
+      <tr>
+        <td><code>OTEL_SERVICE_NAME</code></td>
+        <td>Service name in OTLP traces</td>
+        <td><code>my-agent</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ════════════════════ 11 CONFIGURATION ════════════════════ -->
+<div class="section page-break">
+  <div class="section-label"><span class="section-num">11</span> Configuration</div>
+  <h2>Configuration</h2>
+
+  <h3>pyproject.toml</h3>
+  <pre><code>[build-system]
+requires = [<span class="st">"hatchling"</span>]
+build-backend = <span class="st">"hatchling.build"</span>
+
+[project]
+name = <span class="st">"memorylens"</span>
+version = <span class="st">"0.1.0"</span>
+description = <span class="st">"Observability and debugging for AI agent memory systems"</span>
+requires-python = <span class="st">">=3.10"</span>
+license = <span class="st">"Apache-2.0"</span>
+
+<span class="cm"># Core dependencies (always installed)</span>
+dependencies = [
+    <span class="st">"opentelemetry-api>=1.20"</span>,
+    <span class="st">"opentelemetry-sdk>=1.20"</span>,
+    <span class="st">"opentelemetry-exporter-otlp-proto-grpc>=1.20"</span>,
+    <span class="st">"opentelemetry-exporter-otlp-proto-http>=1.20"</span>,
+    <span class="st">"typer>=0.9"</span>,
+    <span class="st">"rich>=13.0"</span>,
+]
+
+<span class="cm"># Optional extras</span>
+[project.optional-dependencies]
+langchain  = [<span class="st">"langchain-core>=0.1"</span>]
+mem0       = [<span class="st">"mem0ai>=0.1"</span>]
+llamaindex = [<span class="st">"llama-index-core>=0.10"</span>]
+letta      = [<span class="st">"letta-client>=0.1"</span>]
+zep        = [<span class="st">"zep-python>=2.0"</span>]
+ui         = [<span class="st">"fastapi>=0.110"</span>, <span class="st">"uvicorn[standard]>=0.29"</span>, <span class="st">"jinja2>=3.1"</span>]
+audit      = [<span class="st">"sentence-transformers>=2.0"</span>, <span class="st">"numpy>=1.24"</span>]
+dev        = [<span class="st">"pytest>=8.0"</span>, <span class="st">"pytest-asyncio>=0.23"</span>, <span class="st">"ruff>=0.4"</span>,
+              <span class="st">"mypy>=1.10"</span>, <span class="st">"httpx>=0.27"</span>, <span class="st">"numpy>=1.24"</span>]
+
+[project.scripts]
+memorylens = <span class="st">"memorylens.cli.main:app"</span>
+
+<span class="cm"># Tooling configuration</span>
+[tool.hatch.build.targets.wheel]
+packages = [<span class="st">"src/memorylens"</span>]
+
+[tool.pytest.ini_options]
+testpaths = [<span class="st">"tests"</span>]
+pythonpath = [<span class="st">"src"</span>]
+
+[tool.ruff]
+target-version = <span class="st">"py310"</span>
+line-length = <span class="nm">100</span>
+
+[tool.mypy]
+python_version = <span class="st">"3.10"</span>
+strict = <span class="kw">true</span></code></pre>
+
+  <h3>Optional Extras Summary</h3>
+  <table>
+    <thead><tr><th>Extra</th><th>Install Command</th><th>Enables</th><th>Key Dependencies</th></tr></thead>
+    <tbody>
+      <tr><td><code>[langchain]</code></td><td><code>pip install memorylens[langchain]</code></td><td>LangChain auto-instrumentation</td><td>langchain-core ≥ 0.1</td></tr>
+      <tr><td><code>[mem0]</code></td><td><code>pip install memorylens[mem0]</code></td><td>Mem0 auto-instrumentation</td><td>mem0ai ≥ 0.1</td></tr>
+      <tr><td><code>[llamaindex]</code></td><td><code>pip install memorylens[llamaindex]</code></td><td>LlamaIndex auto-instrumentation</td><td>llama-index-core ≥ 0.10</td></tr>
+      <tr><td><code>[letta]</code></td><td><code>pip install memorylens[letta]</code></td><td>Letta auto-instrumentation</td><td>letta-client ≥ 0.1</td></tr>
+      <tr><td><code>[zep]</code></td><td><code>pip install memorylens[zep]</code></td><td>Zep auto-instrumentation</td><td>zep-python ≥ 2.0</td></tr>
+      <tr><td><code>[ui]</code></td><td><code>pip install memorylens[ui]</code></td><td>Web dashboard (<code>memorylens ui</code>)</td><td>fastapi, uvicorn, jinja2</td></tr>
+      <tr><td><code>[audit]</code></td><td><code>pip install memorylens[audit]</code></td><td>Compression Auditor (LocalScorer)</td><td>sentence-transformers, numpy</td></tr>
+    </tbody>
+  </table>
+
+  <p>Multiple extras can be combined: <code>pip install memorylens[langchain,mem0,ui,audit]</code></p>
+
+  <h3>Local Configuration Files</h3>
+  <p>MemoryLens stores local configuration in <code>~/.memorylens/</code>:</p>
+  <table>
+    <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>~/.memorylens/traces.db</code></td><td>SQLite trace database (default location)</td></tr>
+      <tr><td><code>~/.memorylens/pricing.json</code></td><td>User-defined pricing overrides for cost attribution</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ════════════════════ 12 TESTING ════════════════════ -->
+<div class="section page-break">
+  <div class="section-label"><span class="section-num">12</span> Testing</div>
+  <h2>Testing</h2>
+
+  <p>MemoryLens has a comprehensive test suite with <strong>174 tests</strong> across all layers of the system. Tests are organized to mirror the package structure.</p>
+
+  <h3>Test Structure</h3>
+  <div class="file-tree">
+    <span class="dir">tests/</span><br>
+    ├── <span class="file">conftest.py</span>              <span class="comment">  # shared fixtures (in-memory SQLite, mock exporters)</span><br>
+    ├── <span class="dir">test_core/</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">test_tracer.py</span>      <span class="comment">  # TracerProvider, Tracer, _MutableSpan, sampling</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">test_decorators.py</span>  <span class="comment">  # all 4 instrument_* decorators, capture_content</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">test_span.py</span>        <span class="comment">  # MemorySpan, to_dict(), enum serialization</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">test_context.py</span>     <span class="comment">  # MemoryContext, nesting, async isolation</span><br>
+    │&nbsp;&nbsp;&nbsp;└── <span class="file">test_processor.py</span>  <span class="comment">  # BatchSpanProcessor, SimpleSpanProcessor, flush</span><br>
+    ├── <span class="dir">test_exporters/</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">test_otlp.py</span>        <span class="comment">  # ReadableSpanAdapter, OTLPExporter</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">test_sqlite.py</span>      <span class="comment">  # CRUD, query, query_extended, audit methods</span><br>
+    │&nbsp;&nbsp;&nbsp;└── <span class="file">test_jsonl.py</span>       <span class="comment">  # JSONL output format</span><br>
+    ├── <span class="dir">test_integrations/</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">test_langchain.py</span>   <span class="comment">  # LangChain instrumentor with mock BaseMemory</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">test_mem0.py</span>        <span class="comment">  # Mem0 instrumentor with mock Memory class</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">test_llamaindex.py</span>  <span class="comment">  # LlamaIndex with mock ChatMemoryBuffer</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">test_letta.py</span>       <span class="comment">  # Letta with mock client blocks</span><br>
+    │&nbsp;&nbsp;&nbsp;└── <span class="file">test_zep.py</span>         <span class="comment">  # Zep with mock memory client</span><br>
+    ├── <span class="dir">test_ui/</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">test_api_traces.py</span>      <span class="comment">  # trace list/detail/retrieval endpoints</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">test_api_ingest.py</span>      <span class="comment">  # OTLP ingest endpoint</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">test_api_compression.py</span> <span class="comment">  # compression audit endpoints</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">test_templates.py</span>       <span class="comment">  # Jinja2 template rendering</span><br>
+    │&nbsp;&nbsp;&nbsp;└── <span class="file">test_query_extended.py</span>  <span class="comment">  # SQLiteExporter extension</span><br>
+    ├── <span class="dir">test_audit/</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">test_splitter.py</span>    <span class="comment">  # sentence splitting edge cases</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">test_analyzer.py</span>    <span class="comment">  # CompressionAnalyzer with MockScorer</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">test_scorer.py</span>      <span class="comment">  # scorer backends (MockScorer fast, LocalScorer slow)</span><br>
+    │&nbsp;&nbsp;&nbsp;└── <span class="file">test_storage.py</span>     <span class="comment">  # save/get/list audits</span><br>
+    ├── <span class="dir">test_cost/</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">test_pricing.py</span>     <span class="comment">  # pricing load, merge, save</span><br>
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">test_enricher.py</span>    <span class="comment">  # cost computation, skip logic</span><br>
+    │&nbsp;&nbsp;&nbsp;└── <span class="file">test_storage.py</span>     <span class="comment">  # update_span_attributes</span><br>
+    └── <span class="dir">test_cli/</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">test_commands.py</span>    <span class="comment">  # traces, stats, config commands</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">test_audit_commands.py</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;└── <span class="file">test_cost_commands.py</span>
+  </div>
+
+  <h3>Testing Patterns</h3>
+
+  <h4>Framework Integration Mocks</h4>
+  <p>Integration tests use lightweight fake framework classes rather than installing the full framework. The instrumentor's <code>_get_*_class()</code> function is monkeypatched to return the mock class:</p>
+  <pre><code><span class="cm"># Example: testing LangChain integration without installing langchain</span>
+<span class="kw">class</span> <span class="tp">FakeBaseMemory</span>:
+    <span class="kw">def</span> <span class="fn">save_context</span>(self, inputs, outputs): ...
+    <span class="kw">def</span> <span class="fn">load_memory_variables</span>(self, inputs): <span class="kw">return</span> {}
+
+<span class="kw">def</span> <span class="fn">test_langchain_write_span</span>(monkeypatch):
+    monkeypatch.setattr(<span class="st">"memorylens.integrations.langchain.instrumentor._get_base_memory"</span>,
+                        <span class="kw">lambda</span>: <span class="tp">FakeBaseMemory</span>)
+    inst = LangChainInstrumentor()
+    inst.instrument()
+    <span class="cm"># verify spans emitted with correct operation type</span></code></pre>
+
+  <h4>In-Memory SQLite</h4>
+  <p>Database tests use SQLite in-memory connections (<code>db_path=":memory:"</code>) for isolation and speed. Each test gets a fresh database via pytest fixtures.</p>
+
+  <h4>Slow Test Marker</h4>
+  <p>Integration tests that load the real <code>LocalScorer</code> (requires downloading the ~80MB <code>all-MiniLM-L6-v2</code> model) are marked with <code>@pytest.mark.slow</code> and excluded from the default test run:</p>
+  <pre><code><span class="cm"># Run fast tests only (default CI):</span>
+uv run pytest tests/ -v
+
+<span class="cm"># Run slow tests only (model integration):</span>
+uv run pytest tests/ -v -m slow</code></pre>
+
+  <h4>MockScorer for Audit Tests</h4>
+  <p>The <code>MockScorer</code> uses MD5 hashing to produce deterministic, fast embeddings. Texts that share more words get more similar vectors, making it useful for verifying the overall analysis pipeline without requiring a real embedding model.</p>
+
+  <h4>UI Tests with httpx</h4>
+  <p>FastAPI endpoint tests use <code>httpx.AsyncClient</code> with an in-process test client. htmx partial responses are tested by including the <code>HX-Request: true</code> header. No browser automation is used — the server-driven htmx approach means API response testing fully covers all interactive behaviors.</p>
+
+  <h3>Running Tests</h3>
+  <pre><code><span class="cm"># Install dev dependencies</span>
+uv sync --extra dev
+
+<span class="cm"># Run all fast tests</span>
+uv run pytest tests/ -v
+
+<span class="cm"># Run with coverage</span>
+uv run pytest tests/ --cov=memorylens --cov-report=term-missing
+
+<span class="cm"># Lint</span>
+uv run ruff check src/ tests/
+
+<span class="cm"># Type check</span>
+uv run mypy src/memorylens/</code></pre>
+</div>
+
+<!-- ════════════════════ 13 TECHNOLOGY STACK ════════════════════ -->
+<div class="section page-break">
+  <div class="section-label"><span class="section-num">13</span> Technology Stack</div>
+  <h2>Technology Stack</h2>
+
+  <div class="tech-grid">
+    <div class="tech-item">
+      <div class="tech-dot"></div>
+      <div>
+        <div class="tech-name">Python 3.10+</div>
+        <div class="tech-desc">Core language. Uses modern type syntax, <code>match/case</code>, <code>dataclasses</code> with slots, and <code>contextvars</code></div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-dot" style="background:var(--teal)"></div>
+      <div>
+        <div class="tech-name">OpenTelemetry</div>
+        <div class="tech-desc"><code>opentelemetry-api</code>, <code>opentelemetry-sdk</code>, OTLP exporters for gRPC and HTTP</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-dot" style="background:var(--amber)"></div>
+      <div>
+        <div class="tech-name">SQLite</div>
+        <div class="tech-desc">Primary local storage via Python stdlib <code>sqlite3</code>. WAL mode, 4 indexes, lazy migration</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-dot"></div>
+      <div>
+        <div class="tech-name">Typer</div>
+        <div class="tech-desc">CLI framework. Subcommand groups (traces, stats, config, audit, cost). Typer ≥ 0.9</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-dot"></div>
+      <div>
+        <div class="tech-name">Rich</div>
+        <div class="tech-desc">Terminal output formatting. Tables, progress bars, syntax-highlighted output. Rich ≥ 13.0</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-dot" style="background:var(--coral)"></div>
+      <div>
+        <div class="tech-name">FastAPI</div>
+        <div class="tech-desc">Async web framework for the dashboard. App factory pattern, static files, Jinja2 integration. FastAPI ≥ 0.110</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-dot" style="background:var(--teal)"></div>
+      <div>
+        <div class="tech-name">uvicorn</div>
+        <div class="tech-desc">ASGI server. Binds to localhost only. Standard extras for performance. ≥ 0.29</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-dot"></div>
+      <div>
+        <div class="tech-name">Jinja2</div>
+        <div class="tech-desc">Server-side HTML templating. Templates with partials for htmx responses. ≥ 3.1</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-dot" style="background:var(--amber)"></div>
+      <div>
+        <div class="tech-name">htmx</div>
+        <div class="tech-desc">Loaded via CDN. Enables dynamic UI updates (filtering, pagination, live tail) without writing JavaScript</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-dot" style="background:var(--green)"></div>
+      <div>
+        <div class="tech-name">TailwindCSS</div>
+        <div class="tech-desc">Loaded via CDN. Utility-first styling with dark mode support. No build step required</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-dot"></div>
+      <div>
+        <div class="tech-name">sentence-transformers</div>
+        <div class="tech-desc">Local embedding model (<code>all-MiniLM-L6-v2</code>) for the Compression Auditor. Optional [audit] extra</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-dot" style="background:var(--teal)"></div>
+      <div>
+        <div class="tech-name">NumPy</div>
+        <div class="tech-desc">Vector operations for sentence embeddings (via sentence-transformers). Optional [audit] extra</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-dot"></div>
+      <div>
+        <div class="tech-name">pytest</div>
+        <div class="tech-desc">Test runner. pytest-asyncio for async FastAPI tests, httpx for HTTP client testing. 174 tests</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-dot" style="background:var(--coral)"></div>
+      <div>
+        <div class="tech-name">Ruff</div>
+        <div class="tech-desc">Linter and formatter. Targets Python 3.10, 100-char line length. Selects E, F, I, N, W, UP rules</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-dot" style="background:var(--amber)"></div>
+      <div>
+        <div class="tech-name">mypy</div>
+        <div class="tech-desc">Static type checker. Strict mode, <code>warn_return_any</code>, <code>warn_unused_configs</code></div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-dot"></div>
+      <div>
+        <div class="tech-name">hatchling</div>
+        <div class="tech-desc">Build backend for packaging and wheel building. <code>src/</code> layout</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-dot" style="background:var(--green)"></div>
+      <div>
+        <div class="tech-name">uv</div>
+        <div class="tech-desc">Fast Python package manager and project tool. Used for dependency management and running tools</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-dot" style="background:var(--accent-2)"></div>
+      <div>
+        <div class="tech-name">OpenAI (optional)</div>
+        <div class="tech-desc">Optional embedding backend for Compression Auditor using <code>text-embedding-3-small</code>. User-installed</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ 14 PROJECT STATISTICS ════════════════════ -->
+<div class="section">
+  <div class="section-label"><span class="section-num">14</span> Project Statistics</div>
+  <h2>Project Statistics</h2>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number">174</div>
+      <div class="stat-label">Tests</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">47</div>
+      <div class="stat-label">Source Files</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">8</div>
+      <div class="stat-label">Public API Symbols</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">5</div>
+      <div class="stat-label">Framework Integrations</div>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number">~3K</div>
+      <div class="stat-label">Lines, Source</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">~2.7K</div>
+      <div class="stat-label">Lines, Tests</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">7</div>
+      <div class="stat-label">Optional Extras</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">4</div>
+      <div class="stat-label">Memory Operations</div>
+    </div>
+  </div>
+
+  <h3>Source File Breakdown</h3>
+  <table>
+    <thead><tr><th>Module</th><th>Description</th><th>Key Files</th></tr></thead>
+    <tbody>
+      <tr><td><code>memorylens</code></td><td>Public API package</td><td><code>__init__.py</code></td></tr>
+      <tr><td><code>memorylens._core</code></td><td>Tracer, span, decorators, context, processors, sampler</td><td>7 files</td></tr>
+      <tr><td><code>memorylens._exporters</code></td><td>SQLite, OTLP, JSONL, base protocol, registry</td><td>5 files</td></tr>
+      <tr><td><code>memorylens.integrations</code></td><td>5 framework instrumentors + registry</td><td>11 files</td></tr>
+      <tr><td><code>memorylens._ui</code></td><td>FastAPI server, 3 route modules, templates, static</td><td>7 Python files + templates</td></tr>
+      <tr><td><code>memorylens._audit</code></td><td>Compression analyzer, scorer backends, splitter</td><td>4 files</td></tr>
+      <tr><td><code>memorylens._cost</code></td><td>Pricing model, cost enricher</td><td>3 files</td></tr>
+      <tr><td><code>memorylens.cli</code></td><td>CLI entry point + 5 command modules + formatters</td><td>8 files</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Phase Delivery Timeline</h3>
+  <table>
+    <thead><tr><th>Phase</th><th>Date</th><th>Scope</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Phase 1</td>
+        <td>2026-04-07</td>
+        <td>Core SDK: decorators, context, processors, SQLite/OTLP/JSONL exporters, LangChain + Mem0 integrations, CLI</td>
+        <td><span class="badge badge-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td>Phase 2a</td>
+        <td>2026-04-07</td>
+        <td>Web Dashboard: FastAPI server, Trace List, Trace Detail, Retrieval Debugger, OTLP ingest endpoint</td>
+        <td><span class="badge badge-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td>Phase 2b</td>
+        <td>2026-04-08</td>
+        <td>Compression Auditor: CompressionAnalyzer, LocalScorer/OpenAIScorer/MockScorer, CLI audit commands, UI view</td>
+        <td><span class="badge badge-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td>Phase 2c</td>
+        <td>2026-04-08</td>
+        <td>Cost Attribution: pricing model, CostEnricher, update_span_attributes, CLI cost commands, UI integration</td>
+        <td><span class="badge badge-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td>Phase 2d</td>
+        <td>2026-04-08</td>
+        <td>Additional Integrations: LlamaIndex, Letta, and Zep auto-instrumentation</td>
+        <td><span class="badge badge-ok">Complete</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Complete Project File Structure</h3>
+  <div class="file-tree">
+    <span class="dir">MemoryLens/</span><br>
+    ├── <span class="file">pyproject.toml</span>                    <span class="comment">  # build, deps, extras, tools</span><br>
+    ├── <span class="file">uv.lock</span><br>
+    ├── <span class="file">LICENSE</span>                           <span class="comment">  # Apache 2.0</span><br>
+    ├── <span class="file">README.md</span><br>
+    ├── <span class="dir">src/</span><br>
+    │&nbsp;&nbsp;&nbsp;└── <span class="dir">memorylens/</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">__init__.py</span>               <span class="comment">  # 8 public symbols, init(), context()</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="dir">_core/</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="file">tracer.py</span>          <span class="comment">  # TracerProvider, Tracer, _MutableSpan</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="file">span.py</span>            <span class="comment">  # MemorySpan frozen dataclass</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="file">decorators.py</span>      <span class="comment">  # instrument_write/read/compress/update</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="file">schema.py</span>          <span class="comment">  # MemoryOperation, SpanStatus enums</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="file">context.py</span>         <span class="comment">  # MemoryContext, ContextVar</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="file">processor.py</span>       <span class="comment">  # SpanProcessor, SimpleSpanProcessor, BatchSpanProcessor</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── <span class="file">sampler.py</span>         <span class="comment">  # Sampler (rate-based)</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="dir">_exporters/</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="file">base.py</span>            <span class="comment">  # SpanExporter protocol, ExportResult</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="file">sqlite.py</span>          <span class="comment">  # SQLiteExporter with all query methods</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="file">otlp.py</span>            <span class="comment">  # OTLPExporter, _ReadableSpanAdapter</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="file">jsonl.py</span>           <span class="comment">  # JSONLExporter</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── <span class="file">__init__.py</span>        <span class="comment">  # create_exporter() factory</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="dir">integrations/</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="file">__init__.py</span>        <span class="comment">  # Instrumentor protocol, registry, create_instrumentor()</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="dir">langchain/</span>         <span class="comment">  # BaseMemory patcher</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="dir">mem0/</span>              <span class="comment">  # Memory class patcher</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="dir">llamaindex/</span>        <span class="comment">  # ChatMemoryBuffer patcher</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="dir">letta/</span>             <span class="comment">  # Letta client blocks patcher</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── <span class="dir">zep/</span>               <span class="comment">  # Zep memory client patcher</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="dir">_audit/</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="file">analyzer.py</span>        <span class="comment">  # CompressionAnalyzer, CompressionAudit, SentenceAnalysis</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="file">scorer.py</span>          <span class="comment">  # ScorerBackend, MockScorer, LocalScorer, OpenAIScorer</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── <span class="file">splitter.py</span>        <span class="comment">  # split_sentences()</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="dir">_cost/</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="file">pricing.py</span>         <span class="comment">  # DEFAULT_PRICING, load_pricing(), save_user_pricing()</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── <span class="file">enricher.py</span>        <span class="comment">  # CostEnricher</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="dir">_ui/</span>               <span class="comment">  # FastAPI server, routes, templates</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="dir">cli/</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">main.py</span>            <span class="comment">  # Typer app, init, ui commands</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">formatters.py</span>      <span class="comment">  # rich table + JSON output helpers</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="dir">commands/</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">traces.py</span>      <span class="comment">  # list, show, tail, export</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">stats.py</span>       <span class="comment">  # summary statistics</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">config.py</span>      <span class="comment">  # config show/set</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">audit.py</span>       <span class="comment">  # audit compress/show/list</span><br>
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="file">cost.py</span>        <span class="comment">  # cost enrich/report/pricing</span><br>
+    └── <span class="dir">tests/</span>                         <span class="comment">  # 174 tests, 39 test files</span>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<!-- ═══════════════════════════ FOOTER ═══════════════════════════ -->
+<div class="doc-footer">
+  <div class="footer-brand">Memory<em>Lens</em></div>
+  <div class="footer-meta">
+    v0.1.0 Alpha &nbsp;·&nbsp; Apache 2.0<br>
+    Technical Documentation &nbsp;·&nbsp; April 2026
+  </div>
+</div>
+
+</body>
+</html>

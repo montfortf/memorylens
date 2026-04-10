@@ -43,15 +43,19 @@ def _otlp_span_to_memory_span(otel_span: dict[str, Any]) -> MemorySpan | None:
     duration_ms = (end_ns - start_ns) / 1_000_000
 
     skip_keys = {
-        "memorylens.operation", "memorylens.status",
-        "memorylens.agent_id", "memorylens.session_id", "memorylens.user_id",
-        "memorylens.input_content", "memorylens.output_content",
+        "memorylens.operation",
+        "memorylens.status",
+        "memorylens.agent_id",
+        "memorylens.session_id",
+        "memorylens.user_id",
+        "memorylens.input_content",
+        "memorylens.output_content",
     }
     extra_attrs: dict[str, Any] = {}
     for attr in attributes:
         key = attr.get("key", "")
         if key.startswith("memorylens.") and key not in skip_keys:
-            short_key = key[len("memorylens."):]
+            short_key = key[len("memorylens.") :]
             value = attr.get("value", {})
             extra_attrs[short_key] = (
                 value.get("stringValue")

@@ -7,7 +7,9 @@ class TestCostEnricher:
     def test_compute_cost_with_known_model(self):
         pricing = {"gpt-4o-mini": {"input": 0.00000015, "output": 0.0000006}}
         enricher = CostEnricher(pricing=pricing)
-        result = enricher.enrich_span({"tokens_in": 1000, "tokens_out": 500, "model": "gpt-4o-mini"})
+        result = enricher.enrich_span(
+            {"tokens_in": 1000, "tokens_out": 500, "model": "gpt-4o-mini"}
+        )
         assert result is not None
         expected = 1000 * 0.00000015 + 500 * 0.0000006
         assert abs(result["cost_usd"] - expected) < 1e-9

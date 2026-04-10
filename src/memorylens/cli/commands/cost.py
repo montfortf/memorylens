@@ -37,7 +37,11 @@ def cost_enrich(
     warnings = 0
 
     for span in spans:
-        attrs = json.loads(span["attributes"]) if isinstance(span["attributes"], str) else span["attributes"]
+        attrs = (
+            json.loads(span["attributes"])
+            if isinstance(span["attributes"], str)
+            else span["attributes"]
+        )
 
         if not force and "cost_usd" in attrs:
             skipped += 1
@@ -73,7 +77,11 @@ def cost_report(
 
     groups: dict[str, dict] = {}
     for span in spans:
-        attrs = json.loads(span["attributes"]) if isinstance(span["attributes"], str) else span["attributes"]
+        attrs = (
+            json.loads(span["attributes"])
+            if isinstance(span["attributes"], str)
+            else span["attributes"]
+        )
         key = span.get(group_by) or attrs.get(group_by) or "unknown"
         if key not in groups:
             groups[key] = {"spans": 0, "tokens_in": 0, "tokens_out": 0, "cost_usd": 0.0}
@@ -82,7 +90,9 @@ def cost_report(
         groups[key]["tokens_out"] += int(attrs.get("tokens_out", 0))
         groups[key]["cost_usd"] += float(attrs.get("cost_usd", 0))
 
-    table = Table(show_header=True, header_style="bold", title=f"Cost Report (grouped by {group_by})")
+    table = Table(
+        show_header=True, header_style="bold", title=f"Cost Report (grouped by {group_by})"
+    )
     table.add_column(group_by.upper())
     table.add_column("SPANS", justify="right")
     table.add_column("TOKENS IN", justify="right")
@@ -104,7 +114,9 @@ def cost_report(
         total_cost += data["cost_usd"]
 
     console.print(table)
-    console.print(f"\nTotal: {total_spans} spans, {total_in:,} tokens in, {total_out:,} tokens out, ${total_cost:.4f}")
+    console.print(
+        f"\nTotal: {total_spans} spans, {total_in:,} tokens in, {total_out:,} tokens out, ${total_cost:.4f}"
+    )
 
 
 @cost_app.command("pricing")

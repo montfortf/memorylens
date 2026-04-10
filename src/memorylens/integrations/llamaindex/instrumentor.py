@@ -13,9 +13,7 @@ def _get_chat_memory_class() -> type:
 
         return ChatMemoryBuffer
     except ImportError:
-        raise ImportError(
-            "LlamaIndex not found. Install with: pip install memorylens[llamaindex]"
-        )
+        raise ImportError("LlamaIndex not found. Install with: pip install memorylens[llamaindex]")
 
 
 class LlamaIndexInstrumentor:

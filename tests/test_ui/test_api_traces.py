@@ -38,15 +38,25 @@ def _make_span(
 def _create_seeded_client(tmp_path) -> TestClient:
     db_path = str(tmp_path / "test.db")
     exporter = SQLiteExporter(db_path=db_path)
-    exporter.export([
-        _make_span("s1", "t1", MemoryOperation.WRITE),
-        _make_span("s2", "t2", MemoryOperation.READ, attributes={
-            "backend": "pinecone", "query": "music prefs",
-            "scores": [0.92, 0.87, 0.65], "threshold": 0.7,
-            "top_k": 5, "results_count": 2,
-        }),
-        _make_span("s3", "t3", MemoryOperation.WRITE, status=SpanStatus.ERROR),
-    ])
+    exporter.export(
+        [
+            _make_span("s1", "t1", MemoryOperation.WRITE),
+            _make_span(
+                "s2",
+                "t2",
+                MemoryOperation.READ,
+                attributes={
+                    "backend": "pinecone",
+                    "query": "music prefs",
+                    "scores": [0.92, 0.87, 0.65],
+                    "threshold": 0.7,
+                    "top_k": 5,
+                    "results_count": 2,
+                },
+            ),
+            _make_span("s3", "t3", MemoryOperation.WRITE, status=SpanStatus.ERROR),
+        ]
+    )
     exporter.shutdown()
     app = create_app(db_path=db_path)
     return TestClient(app)

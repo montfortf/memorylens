@@ -42,6 +42,7 @@ def make_span(
 @pytest.fixture
 def tracker(tmp_path):
     from memorylens._exporters.sqlite import SQLiteExporter
+
     exporter = SQLiteExporter(db_path=str(tmp_path / "test.db"))
     scorer = CachedScorer(MockScorer())
     t = VersionTracker(exporter=exporter, scorer=scorer)

@@ -83,7 +83,7 @@ class TestAdminPageAccess:
         assert "/login" in response.headers["location"]
 
     def test_no_key_redirects_to_login(self, tmp_path):
-        from memorylens._auth.keys import generate_key, hash_key, key_prefix
+        from memorylens._auth.keys import generate_key, hash_key
         from memorylens._exporters.sqlite import SQLiteExporter
         from memorylens._ui.server import create_app
 
@@ -168,7 +168,7 @@ class TestAdminRevokeKey:
     def test_revoke_key_as_admin(self, admin_client):
         c, db_path, _ = admin_client
         # Add a second key to revoke
-        from memorylens._auth.keys import generate_key, hash_key, key_prefix
+        from memorylens._auth.keys import generate_key, hash_key
         from memorylens._exporters.sqlite import SQLiteExporter
 
         exp = SQLiteExporter(db_path=db_path)
@@ -214,7 +214,7 @@ class TestSharingRoutes:
         assert "url" in response.json()
 
     def test_create_share_no_key_in_auth_mode_returns_401(self, tmp_path):
-        from memorylens._auth.keys import generate_key, hash_key, key_prefix
+        from memorylens._auth.keys import generate_key, hash_key
         from memorylens._exporters.sqlite import SQLiteExporter
         from memorylens._ui.server import create_app
 

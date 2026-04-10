@@ -29,8 +29,7 @@ class CostEnricher:
             # Unknown model — still record tokens but cost is 0
             return {"cost_usd": 0.0, "_cost_warning": f"unknown model: {model}"}
 
-        cost = (
-            int(tokens_in) * model_pricing.get("input", 0)
-            + int(tokens_out) * model_pricing.get("output", 0)
+        cost = int(tokens_in) * model_pricing.get("input", 0) + int(tokens_out) * model_pricing.get(
+            "output", 0
         )
         return {"cost_usd": round(cost, 10)}

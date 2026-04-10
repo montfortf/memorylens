@@ -5,7 +5,7 @@ import time
 
 import pytest
 
-from memorylens._alerts.evaluator import AlertEvaluator, AlertEvent
+from memorylens._alerts.evaluator import AlertEvaluator
 from memorylens._exporters.sqlite import SQLiteExporter
 
 

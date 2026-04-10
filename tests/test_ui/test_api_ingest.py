@@ -20,30 +20,51 @@ def _make_otlp_payload(
     trace_id: str = "def456",
 ) -> dict:
     return {
-        "resourceSpans": [{
-            "resource": {"attributes": []},
-            "scopeSpans": [{
-                "scope": {"name": "memorylens", "version": "0.1.0"},
-                "spans": [{
-                    "traceId": trace_id,
-                    "spanId": span_id,
-                    "name": operation,
-                    "kind": 1,
-                    "startTimeUnixNano": "1000000000000",
-                    "endTimeUnixNano": "1000012000000",
-                    "attributes": [
-                        {"key": "memorylens.operation", "value": {"stringValue": operation}},
-                        {"key": "memorylens.status", "value": {"stringValue": status}},
-                        {"key": "memorylens.agent_id", "value": {"stringValue": agent_id}},
-                        {"key": "memorylens.session_id", "value": {"stringValue": "sess-1"}},
-                        {"key": "memorylens.user_id", "value": {"stringValue": "user-1"}},
-                        {"key": "memorylens.input_content", "value": {"stringValue": "test data"}},
-                        {"key": "memorylens.backend", "value": {"stringValue": "mem0"}},
-                    ],
-                    "status": {"code": 1},
-                }],
-            }],
-        }],
+        "resourceSpans": [
+            {
+                "resource": {"attributes": []},
+                "scopeSpans": [
+                    {
+                        "scope": {"name": "memorylens", "version": "0.1.0"},
+                        "spans": [
+                            {
+                                "traceId": trace_id,
+                                "spanId": span_id,
+                                "name": operation,
+                                "kind": 1,
+                                "startTimeUnixNano": "1000000000000",
+                                "endTimeUnixNano": "1000012000000",
+                                "attributes": [
+                                    {
+                                        "key": "memorylens.operation",
+                                        "value": {"stringValue": operation},
+                                    },
+                                    {"key": "memorylens.status", "value": {"stringValue": status}},
+                                    {
+                                        "key": "memorylens.agent_id",
+                                        "value": {"stringValue": agent_id},
+                                    },
+                                    {
+                                        "key": "memorylens.session_id",
+                                        "value": {"stringValue": "sess-1"},
+                                    },
+                                    {
+                                        "key": "memorylens.user_id",
+                                        "value": {"stringValue": "user-1"},
+                                    },
+                                    {
+                                        "key": "memorylens.input_content",
+                                        "value": {"stringValue": "test data"},
+                                    },
+                                    {"key": "memorylens.backend", "value": {"stringValue": "mem0"}},
+                                ],
+                                "status": {"code": 1},
+                            }
+                        ],
+                    }
+                ],
+            }
+        ],
     }
 
 
@@ -64,24 +85,30 @@ class TestOTLPIngest:
     def test_ingest_ignores_non_memorylens_spans(self, tmp_path):
         client, db_path = _create_ingest_client(tmp_path)
         payload = {
-            "resourceSpans": [{
-                "resource": {"attributes": []},
-                "scopeSpans": [{
-                    "scope": {"name": "other"},
-                    "spans": [{
-                        "traceId": "t1",
-                        "spanId": "s1",
-                        "name": "http.request",
-                        "kind": 1,
-                        "startTimeUnixNano": "1000",
-                        "endTimeUnixNano": "2000",
-                        "attributes": [
-                            {"key": "http.method", "value": {"stringValue": "GET"}},
-                        ],
-                        "status": {"code": 1},
-                    }],
-                }],
-            }],
+            "resourceSpans": [
+                {
+                    "resource": {"attributes": []},
+                    "scopeSpans": [
+                        {
+                            "scope": {"name": "other"},
+                            "spans": [
+                                {
+                                    "traceId": "t1",
+                                    "spanId": "s1",
+                                    "name": "http.request",
+                                    "kind": 1,
+                                    "startTimeUnixNano": "1000",
+                                    "endTimeUnixNano": "2000",
+                                    "attributes": [
+                                        {"key": "http.method", "value": {"stringValue": "GET"}},
+                                    ],
+                                    "status": {"code": 1},
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ],
         }
         resp = client.post("/v1/traces", json=payload)
         assert resp.status_code == 200

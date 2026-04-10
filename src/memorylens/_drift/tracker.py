@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import time
-
 from memorylens._audit.scorer import CachedScorer, cosine_similarity
 from memorylens._core.span import MemorySpan
 from memorylens._exporters.sqlite import SQLiteExporter
@@ -49,6 +47,7 @@ class VersionTracker:
             if not content:
                 return
             import hashlib
+
             memory_key = hashlib.md5(content.encode()).hexdigest()[:16]
 
         content = span.output_content or span.input_content or ""

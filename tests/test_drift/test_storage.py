@@ -39,51 +39,57 @@ class TestVersionStorage:
     def test_get_versions_ordered(self, exporter):
         base_time = time.time()
         for v in range(3):
-            exporter.save_version({
-                "memory_key": "key_a",
-                "version": v + 1,
-                "span_id": f"span-{v}",
-                "operation": "memory.write",
-                "content": f"Version {v + 1}",
-                "embedding": None,
-                "agent_id": None,
-                "session_id": None,
-                "timestamp": base_time + v,
-            })
+            exporter.save_version(
+                {
+                    "memory_key": "key_a",
+                    "version": v + 1,
+                    "span_id": f"span-{v}",
+                    "operation": "memory.write",
+                    "content": f"Version {v + 1}",
+                    "embedding": None,
+                    "agent_id": None,
+                    "session_id": None,
+                    "timestamp": base_time + v,
+                }
+            )
         rows = exporter.get_versions("key_a")
         assert len(rows) == 3
         assert [r["version"] for r in rows] == [1, 2, 3]
 
     def test_get_all_versions(self, exporter):
         for mk in ["key_a", "key_b"]:
-            exporter.save_version({
-                "memory_key": mk,
-                "version": 1,
-                "span_id": f"span-{mk}",
-                "operation": "memory.write",
-                "content": f"Content for {mk}",
-                "embedding": None,
-                "agent_id": None,
-                "session_id": None,
-                "timestamp": time.time(),
-            })
+            exporter.save_version(
+                {
+                    "memory_key": mk,
+                    "version": 1,
+                    "span_id": f"span-{mk}",
+                    "operation": "memory.write",
+                    "content": f"Content for {mk}",
+                    "embedding": None,
+                    "agent_id": None,
+                    "session_id": None,
+                    "timestamp": time.time(),
+                }
+            )
         all_versions = exporter.get_all_versions()
         assert len(all_versions) == 2
         keys = {r["memory_key"] for r in all_versions}
         assert keys == {"key_a", "key_b"}
 
     def test_version_without_embedding(self, exporter):
-        exporter.save_version({
-            "memory_key": "no_embed",
-            "version": 1,
-            "span_id": "s1",
-            "operation": "memory.write",
-            "content": "text",
-            "embedding": None,
-            "agent_id": None,
-            "session_id": None,
-            "timestamp": time.time(),
-        })
+        exporter.save_version(
+            {
+                "memory_key": "no_embed",
+                "version": 1,
+                "span_id": "s1",
+                "operation": "memory.write",
+                "content": "text",
+                "embedding": None,
+                "agent_id": None,
+                "session_id": None,
+                "timestamp": time.time(),
+            }
+        )
         rows = exporter.get_versions("no_embed")
         assert rows[0]["embedding"] is None
 

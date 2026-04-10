@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import time
 
-import pytest
-
 from memorylens._auth.sharing import create_shared_link, is_link_expired, resolve_shared_link
 
 

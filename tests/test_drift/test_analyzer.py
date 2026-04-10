@@ -50,17 +50,19 @@ class TestAnalyzeEntitySingleVersion:
         scorer = make_scorer()
         analyzer = DriftAnalyzer(scorer)
         # timestamp = very recent (now)
-        versions = [{
-            "memory_key": "fresh_key",
-            "version": 1,
-            "span_id": "s1",
-            "operation": "memory.write",
-            "content": "Fresh content.",
-            "embedding": None,
-            "agent_id": None,
-            "session_id": None,
-            "timestamp": time.time(),
-        }]
+        versions = [
+            {
+                "memory_key": "fresh_key",
+                "version": 1,
+                "span_id": "s1",
+                "operation": "memory.write",
+                "content": "Fresh content.",
+                "embedding": None,
+                "agent_id": None,
+                "session_id": None,
+                "timestamp": time.time(),
+            }
+        ]
         result = analyzer.analyze_entity(versions)
         assert result.grade == "A"
 
@@ -79,11 +81,13 @@ class TestAnalyzeEntityMultipleVersions:
     def test_different_versions_high_drift(self):
         scorer = make_scorer()
         analyzer = DriftAnalyzer(scorer)
-        versions = make_versions([
-            "User loves meat and burgers.",
-            "User is strictly vegan, no animal products.",
-            "User eats seafood but avoids land animals.",
-        ])
+        versions = make_versions(
+            [
+                "User loves meat and burgers.",
+                "User is strictly vegan, no animal products.",
+                "User eats seafood but avoids land animals.",
+            ]
+        )
         result = analyzer.analyze_entity(versions)
         assert result.drift_score > 0.1  # Some drift from divergent content
         assert 0.0 <= result.drift_score <= 1.0
@@ -128,13 +132,19 @@ class TestAnalyzeEntityMultipleVersions:
     def test_score_bounds(self):
         scorer = make_scorer()
         analyzer = DriftAnalyzer(scorer)
-        versions = make_versions([
-            "Memory content alpha.",
-            "Completely different memory beta.",
-        ])
+        versions = make_versions(
+            [
+                "Memory content alpha.",
+                "Completely different memory beta.",
+            ]
+        )
         result = analyzer.analyze_entity(versions)
-        for score in [result.drift_score, result.contradiction_score,
-                      result.staleness_score, result.volatility_score]:
+        for score in [
+            result.drift_score,
+            result.contradiction_score,
+            result.staleness_score,
+            result.volatility_score,
+        ]:
             assert 0.0 <= score <= 1.0
 
 

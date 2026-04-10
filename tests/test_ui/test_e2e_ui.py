@@ -52,27 +52,45 @@ class TestEndToEndUI:
         client = TestClient(app)
 
         payload = {
-            "resourceSpans": [{
-                "resource": {"attributes": []},
-                "scopeSpans": [{
-                    "scope": {"name": "memorylens"},
-                    "spans": [{
-                        "traceId": "e2etrace",
-                        "spanId": "e2espan",
-                        "name": "memory.write",
-                        "kind": 1,
-                        "startTimeUnixNano": "1000000000000",
-                        "endTimeUnixNano": "1000012000000",
-                        "attributes": [
-                            {"key": "memorylens.operation", "value": {"stringValue": "memory.write"}},
-                            {"key": "memorylens.status", "value": {"stringValue": "ok"}},
-                            {"key": "memorylens.agent_id", "value": {"stringValue": "ingest-bot"}},
-                            {"key": "memorylens.input_content", "value": {"stringValue": "ingested data"}},
-                        ],
-                        "status": {"code": 1},
-                    }],
-                }],
-            }],
+            "resourceSpans": [
+                {
+                    "resource": {"attributes": []},
+                    "scopeSpans": [
+                        {
+                            "scope": {"name": "memorylens"},
+                            "spans": [
+                                {
+                                    "traceId": "e2etrace",
+                                    "spanId": "e2espan",
+                                    "name": "memory.write",
+                                    "kind": 1,
+                                    "startTimeUnixNano": "1000000000000",
+                                    "endTimeUnixNano": "1000012000000",
+                                    "attributes": [
+                                        {
+                                            "key": "memorylens.operation",
+                                            "value": {"stringValue": "memory.write"},
+                                        },
+                                        {
+                                            "key": "memorylens.status",
+                                            "value": {"stringValue": "ok"},
+                                        },
+                                        {
+                                            "key": "memorylens.agent_id",
+                                            "value": {"stringValue": "ingest-bot"},
+                                        },
+                                        {
+                                            "key": "memorylens.input_content",
+                                            "value": {"stringValue": "ingested data"},
+                                        },
+                                    ],
+                                    "status": {"code": 1},
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ],
         }
         resp = client.post("/v1/traces", json=payload)
         assert resp.status_code == 200

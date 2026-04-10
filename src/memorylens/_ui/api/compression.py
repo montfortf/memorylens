@@ -94,6 +94,4 @@ def create_compression_routes(app: FastAPI) -> None:
                 status_code=500,
             )
 
-        return RedirectResponse(
-            url=f"/traces/{trace_id}/compression", status_code=303
-        )
+        return RedirectResponse(url=f"/traces/{trace_id}/compression", status_code=303)

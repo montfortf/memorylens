@@ -77,8 +77,7 @@ class CompressionAnalyzer:
                 best_score = 0.0
             else:
                 best_score = max(
-                    cosine_similarity(pre_embeddings[i], post_emb)
-                    for post_emb in post_embeddings
+                    cosine_similarity(pre_embeddings[i], post_emb) for post_emb in post_embeddings
                 )
             # Clamp to [0, 1]
             best_score = max(0.0, min(1.0, best_score))

@@ -120,7 +120,9 @@ def audit_show(
     console.print(f"  Loss Score:    {loss:.2f} ({loss_label})")
     ratio = result["compression_ratio"]
     console.print(f"  Ratio:         {ratio:.2f} ({(1 - ratio) * 100:.0f}% reduction)")
-    console.print(f"  Sentences:     {result['pre_sentence_count']} pre, {result['post_sentence_count']} post")
+    console.print(
+        f"  Sentences:     {result['pre_sentence_count']} pre, {result['post_sentence_count']} post"
+    )
     console.print(f"  Scorer:        {result['scorer_backend']}")
 
     sentences = json.loads(result["sentences"])
@@ -128,7 +130,7 @@ def audit_show(
     for s in sentences:
         icon = "[green]✓[/green]" if s["status"] == "preserved" else "[red]✗[/red]"
         score = s["best_match_score"]
-        console.print(f"    {icon} [{score:.2f}] \"{s['text']}\"")
+        console.print(f'    {icon} [{score:.2f}] "{s["text"]}"')
     console.print()
 
 

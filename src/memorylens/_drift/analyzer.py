@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from typing import Any
 
 from memorylens._audit.scorer import CachedScorer, cosine_similarity
 from memorylens._drift.health import HealthScore, compute_grade
@@ -14,11 +13,11 @@ class EntityDriftResult:
 
     memory_key: str
     version_count: int
-    drift_score: float          # 0.0–1.0: mean cross-version drift
+    drift_score: float  # 0.0–1.0: mean cross-version drift
     contradiction_score: float  # 0.0–1.0: proportion of pairs with similarity < 0.5
-    staleness_score: float      # 0.0–1.0: based on days since last update
-    volatility_score: float     # 0.0–1.0: sessions with changes / total sessions
-    grade: str                  # A / B / C / D / F
+    staleness_score: float  # 0.0–1.0: based on days since last update
+    volatility_score: float  # 0.0–1.0: sessions with changes / total sessions
+    grade: str  # A / B / C / D / F
     consecutive_similarities: list[float] = field(default_factory=list)
 
 
@@ -41,7 +40,7 @@ class TopicDriftResult:
 
     topic_id: str
     memory_keys: list[str]
-    centroid_drift: float       # How much the cluster centroid moved over time
+    centroid_drift: float  # How much the cluster centroid moved over time
     drift_score: float
     contradiction_score: float
     staleness_score: float
@@ -112,7 +111,9 @@ class DriftAnalyzer:
                 total_pairs += 1
                 if sim < 0.5:
                     contradicting_pairs += 1
-        contradiction_score = round(contradicting_pairs / total_pairs, 4) if total_pairs > 0 else 0.0
+        contradiction_score = (
+            round(contradicting_pairs / total_pairs, 4) if total_pairs > 0 else 0.0
+        )
 
         # ── Staleness score ─────────────────────────────────────────────────
         last_ts = max(v["timestamp"] for v in versions)
@@ -128,9 +129,7 @@ class DriftAnalyzer:
                 all_sessions.add(sid)
                 sessions_with_changes.add(sid)
         volatility_score = (
-            round(len(sessions_with_changes) / len(all_sessions), 4)
-            if all_sessions
-            else 0.0
+            round(len(sessions_with_changes) / len(all_sessions), 4) if all_sessions else 0.0
         )
 
         grade = compute_grade(drift_score, contradiction_score, staleness_score, volatility_score)
@@ -146,9 +145,7 @@ class DriftAnalyzer:
             consecutive_similarities=consecutive_sims,
         )
 
-    def analyze_session(
-        self, session_id: str, versions: list[dict]
-    ) -> SessionDriftResult:
+    def analyze_session(self, session_id: str, versions: list[dict]) -> SessionDriftResult:
         """Compute session-level drift.
 
         For each memory_key that was modified in this session, compare the version
@@ -187,9 +184,15 @@ class DriftAnalyzer:
         for key in memory_keys_modified:
             all_key_versions = by_key.get(key, [])
             # Find versions belonging to this session
-            session_key_versions = [v for v in all_key_versions if v.get("session_id") == session_id]
-            prior_versions = [v for v in all_key_versions if v.get("session_id") != session_id
-                              and v["version"] < min(sv["version"] for sv in session_key_versions)]
+            session_key_versions = [
+                v for v in all_key_versions if v.get("session_id") == session_id
+            ]
+            prior_versions = [
+                v
+                for v in all_key_versions
+                if v.get("session_id") != session_id
+                and v["version"] < min(sv["version"] for sv in session_key_versions)
+            ]
 
             if not prior_versions:
                 # No prior version to compare against — no drift for this key
@@ -198,19 +201,23 @@ class DriftAnalyzer:
             # Compare earliest session version against latest prior version
             prior = prior_versions[-1]
             current = session_key_versions[0]
-            pair_embeddings = self._scorer.embed([
-                prior.get("content") or "",
-                current.get("content") or "",
-            ])
+            pair_embeddings = self._scorer.embed(
+                [
+                    prior.get("content") or "",
+                    current.get("content") or "",
+                ]
+            )
             sim = cosine_similarity(pair_embeddings[0], pair_embeddings[1])
             sim = max(0.0, min(1.0, sim))
             drift_scores.append(1.0 - sim)
             contradiction_scores.append(1.0 if sim < 0.5 else 0.0)
 
         drift_score = round(sum(drift_scores) / len(drift_scores), 4) if drift_scores else 0.0
-        contradiction_score = round(
-            sum(contradiction_scores) / len(contradiction_scores), 4
-        ) if contradiction_scores else 0.0
+        contradiction_score = (
+            round(sum(contradiction_scores) / len(contradiction_scores), 4)
+            if contradiction_scores
+            else 0.0
+        )
 
         # Staleness: time since session ended (latest timestamp in session)
         now = time.time()
@@ -220,9 +227,11 @@ class DriftAnalyzer:
 
         # Volatility: proportion of modified keys vs all keys touched by session
         total_keys_in_session = len({v["memory_key"] for v in session_versions})
-        volatility_score = round(
-            len(memory_keys_modified) / total_keys_in_session, 4
-        ) if total_keys_in_session > 0 else 0.0
+        volatility_score = (
+            round(len(memory_keys_modified) / total_keys_in_session, 4)
+            if total_keys_in_session > 0
+            else 0.0
+        )
 
         grade = compute_grade(drift_score, contradiction_score, staleness_score, volatility_score)
 
@@ -236,9 +245,7 @@ class DriftAnalyzer:
             grade=grade,
         )
 
-    def analyze_topics(
-        self, all_versions: list[dict]
-    ) -> list[TopicDriftResult]:
+    def analyze_topics(self, all_versions: list[dict]) -> list[TopicDriftResult]:
         """Cluster memory versions by embedding similarity and detect centroid drift.
 
         Groups versions into topic clusters where pairwise similarity > 0.7.
@@ -294,7 +301,9 @@ class DriftAnalyzer:
             # Centroid drift: compare first-half centroid to second-half centroid
             mid = max(1, n // 2)
             first_half_embeddings = [e for _, e in time_sorted[:mid]]
-            second_half_embeddings = [e for _, e in time_sorted[mid:]] if n > 1 else first_half_embeddings
+            second_half_embeddings = (
+                [e for _, e in time_sorted[mid:]] if n > 1 else first_half_embeddings
+            )
 
             def centroid(embs: list[list[float]]) -> list[float]:
                 c = [0.0] * dim
@@ -331,19 +340,23 @@ class DriftAnalyzer:
             sessions = {v.get("session_id") for v in cluster_versions if v.get("session_id")}
             volatility_score = round(len(sessions) / n, 4) if n > 0 else 0.0
 
-            grade = compute_grade(centroid_drift, contradiction_score, staleness_score, volatility_score)
+            grade = compute_grade(
+                centroid_drift, contradiction_score, staleness_score, volatility_score
+            )
             memory_keys = list({v["memory_key"] for v in cluster_versions})
 
-            results.append(TopicDriftResult(
-                topic_id=f"topic_{cluster_idx}",
-                memory_keys=memory_keys,
-                centroid_drift=centroid_drift,
-                drift_score=centroid_drift,
-                contradiction_score=contradiction_score,
-                staleness_score=staleness_score,
-                volatility_score=volatility_score,
-                grade=grade,
-            ))
+            results.append(
+                TopicDriftResult(
+                    topic_id=f"topic_{cluster_idx}",
+                    memory_keys=memory_keys,
+                    centroid_drift=centroid_drift,
+                    drift_score=centroid_drift,
+                    contradiction_score=contradiction_score,
+                    staleness_score=staleness_score,
+                    volatility_score=volatility_score,
+                    grade=grade,
+                )
+            )
 
         return results
 

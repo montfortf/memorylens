@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
 
 from memorylens._auth.keys import generate_key, hash_key, key_prefix

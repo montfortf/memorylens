@@ -87,9 +87,7 @@ class ZepInstrumentor:
                 span.set_content(input_content=query)
                 result = original_search(self_mem, session_id, query, limit, **kw)
                 if isinstance(result, list):
-                    scores = [
-                        r.get("score", 0.0) for r in result if isinstance(r, dict)
-                    ]
+                    scores = [r.get("score", 0.0) for r in result if isinstance(r, dict)]
                     span.set_attribute("results_count", len(result))
                     span.set_attribute("scores", scores)
                 span.set_content(output_content=repr(result))

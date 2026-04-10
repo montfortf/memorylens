@@ -33,13 +33,21 @@ def _make_span(
 
 
 def _seed_db(exporter: SQLiteExporter) -> None:
-    exporter.export([
-        _make_span("s1", "t1", MemoryOperation.WRITE, input_content="user prefers jazz"),
-        _make_span("s2", "t2", MemoryOperation.READ, input_content="music preferences"),
-        _make_span("s3", "t3", MemoryOperation.WRITE, status=SpanStatus.ERROR, input_content="failed write"),
-        _make_span("s4", "t4", MemoryOperation.WRITE, input_content="user likes pizza"),
-        _make_span("s5", "t5", MemoryOperation.READ, input_content="food preferences"),
-    ])
+    exporter.export(
+        [
+            _make_span("s1", "t1", MemoryOperation.WRITE, input_content="user prefers jazz"),
+            _make_span("s2", "t2", MemoryOperation.READ, input_content="music preferences"),
+            _make_span(
+                "s3",
+                "t3",
+                MemoryOperation.WRITE,
+                status=SpanStatus.ERROR,
+                input_content="failed write",
+            ),
+            _make_span("s4", "t4", MemoryOperation.WRITE, input_content="user likes pizza"),
+            _make_span("s5", "t5", MemoryOperation.READ, input_content="food preferences"),
+        ]
+    )
 
 
 class TestQueryExtended:

@@ -36,13 +36,17 @@ def _make_compress_span(
 
 def _seed_db(db_path: str) -> None:
     exporter = SQLiteExporter(db_path=db_path)
-    exporter.export([
-        _make_compress_span("s1", "t1"),
-        _make_compress_span("s2", "t2",
-            pre="Meeting on Thursday. Weather was nice. Budget discussion.",
-            post="Budget was discussed.",
-        ),
-    ])
+    exporter.export(
+        [
+            _make_compress_span("s1", "t1"),
+            _make_compress_span(
+                "s2",
+                "t2",
+                pre="Meeting on Thursday. Weather was nice. Budget discussion.",
+                post="Budget was discussed.",
+            ),
+        ]
+    )
     exporter.shutdown()
 
 
@@ -57,10 +61,19 @@ class TestAuditCompress:
     def test_audit_compress_specific_trace(self, tmp_path):
         db_path = str(tmp_path / "test.db")
         _seed_db(db_path)
-        result = runner.invoke(app, [
-            "audit", "compress", "--db-path", db_path,
-            "--scorer", "mock", "--trace-id", "t1",
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "audit",
+                "compress",
+                "--db-path",
+                db_path,
+                "--scorer",
+                "mock",
+                "--trace-id",
+                "t1",
+            ],
+        )
         assert result.exit_code == 0
 
 

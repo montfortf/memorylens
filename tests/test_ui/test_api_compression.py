@@ -46,17 +46,27 @@ def _make_audit(span_id: str = "s1") -> CompressionAudit:
 def _create_seeded_client(tmp_path, with_audit: bool = False) -> TestClient:
     db_path = str(tmp_path / "test.db")
     exporter = SQLiteExporter(db_path=db_path)
-    exporter.export([
-        _make_compress_span("s1", "t1"),
-        MemorySpan(
-            span_id="s2", trace_id="t2", parent_span_id=None,
-            operation=MemoryOperation.WRITE, status=SpanStatus.OK,
-            start_time=1000.0, end_time=1010.0, duration_ms=10.0,
-            agent_id="bot", session_id="sess-1", user_id="user-1",
-            input_content="data", output_content="stored",
-            attributes={"backend": "test"},
-        ),
-    ])
+    exporter.export(
+        [
+            _make_compress_span("s1", "t1"),
+            MemorySpan(
+                span_id="s2",
+                trace_id="t2",
+                parent_span_id=None,
+                operation=MemoryOperation.WRITE,
+                status=SpanStatus.OK,
+                start_time=1000.0,
+                end_time=1010.0,
+                duration_ms=10.0,
+                agent_id="bot",
+                session_id="sess-1",
+                user_id="user-1",
+                input_content="data",
+                output_content="stored",
+                attributes={"backend": "test"},
+            ),
+        ]
+    )
     if with_audit:
         exporter.save_audit(_make_audit("s1"))
     exporter.shutdown()

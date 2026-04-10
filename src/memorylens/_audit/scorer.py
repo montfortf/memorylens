@@ -56,8 +56,7 @@ class LocalScorer:
             from sentence_transformers import SentenceTransformer
         except ImportError:
             raise ImportError(
-                "sentence-transformers not found. "
-                "Install with: pip install memorylens[audit]"
+                "sentence-transformers not found. Install with: pip install memorylens[audit]"
             )
         self._model = SentenceTransformer(model_name)
 
@@ -72,9 +71,7 @@ class OpenAIScorer:
         try:
             import openai
         except ImportError:
-            raise ImportError(
-                "openai package not found. Install with: pip install openai"
-            )
+            raise ImportError("openai package not found. Install with: pip install openai")
         self._client = openai.OpenAI()
         self._model = model
 
@@ -127,6 +124,4 @@ def create_scorer(name: str) -> ScorerBackend:
     elif name == "openai":
         return OpenAIScorer()
     else:
-        raise ValueError(
-            f"Unknown scorer '{name}'. Available: mock, local, openai"
-        )
+        raise ValueError(f"Unknown scorer '{name}'. Available: mock, local, openai")
