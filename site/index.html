@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="MemoryLens — Observability and debugging for AI agent memory systems. Instrument, trace, and debug your agent's memory pipeline.">
+<title>MemoryLens — Observability for AI Agent Memory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1a2e;
+    --ink-mid: #3a3a5c;
+    --ink-faint: #7a7a9a;
+    --surface: #f8f7f4;
+    --surface-2: #f0ede8;
+    --surface-3: #e6e2db;
+    --accent: #4a3fa0;
+    --accent-2: #7c6fe0;
+    --accent-pale: #edeafb;
+    --teal: #1a8a72;
+    --teal-pale: #e0f4ef;
+    --amber: #b85e00;
+    --amber-pale: #fdf0e0;
+    --coral: #c94040;
+    --coral-pale: #fde8e8;
+    --green: #2e7d32;
+    --green-pale: #e8f5e9;
+    --border: rgba(26,26,46,0.1);
+    --border-strong: rgba(26,26,46,0.2);
+    --nav-h: 60px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #e8e6f0;
+      --ink-mid: #b8b6cc;
+      --ink-faint: #7a789a;
+      --surface: #14131e;
+      --surface-2: #1e1c2e;
+      --surface-3: #28263a;
+      --accent: #8a7fe8;
+      --accent-2: #a898f0;
+      --accent-pale: #1e1c38;
+      --teal: #4ab89a;
+      --teal-pale: #0f2820;
+      --amber: #e09030;
+      --amber-pale: #281c08;
+      --coral: #e86060;
+      --coral-pale: #2a1010;
+      --green: #66bb6a;
+      --green-pale: #0f2810;
+      --border: rgba(255,255,255,0.08);
+      --border-strong: rgba(255,255,255,0.16);
+    }
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    background: var(--surface);
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── NAVIGATION ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: var(--nav-h);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 48px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--ink);
+  }
+
+  .nav-logo {
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .nav-logo svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .nav-wordmark {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 18px;
+    color: var(--ink);
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink-mid);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .nav-links a:hover { color: var(--accent); }
+
+  .nav-cta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn-ghost {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-mid);
+    text-decoration: none;
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border-strong);
+    transition: all 0.15s;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .btn-ghost:hover {
+    background: var(--surface-2);
+    color: var(--ink);
+  }
+
+  .btn-primary {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    text-decoration: none;
+    padding: 7px 16px;
+    border-radius: 6px;
+    background: var(--accent);
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+
+  .btn-primary:hover { opacity: 0.88; }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: 96px 48px 80px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -120px; left: 50%; transform: translateX(-50%);
+    width: 700px; height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--accent-pale) 0%, transparent 70%);
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; right: -60px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--teal-pale) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+    padding: 6px 14px;
+    background: var(--accent-pale);
+    border: 1px solid rgba(74,63,160,0.2);
+    border-radius: 20px;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .hero-title {
+    position: relative;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(48px, 7vw, 88px);
+    line-height: 1.0;
+    color: var(--ink);
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-tagline {
+    position: relative;
+    font-size: clamp(17px, 2vw, 22px);
+    color: var(--ink-mid);
+    max-width: 560px;
+    margin: 0 auto 40px;
+    line-height: 1.5;
+    font-weight: 400;
+  }
+
+  .hero-badges {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 48px;
+  }
+
+  .install-badge {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    overflow: hidden;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    background: var(--surface-2);
+  }
+
+  .install-badge .badge-label {
+    padding: 9px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    color: white;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+
+  .install-badge .badge-label.py { background: #306998; }
+  .install-badge .badge-label.npm { background: #cb3837; }
+
+  .install-badge .badge-cmd {
+    padding: 9px 14px;
+    color: var(--ink);
+    font-weight: 400;
+    user-select: all;
+    cursor: text;
+  }
+
+  .hero-stats {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+
+  .hero-stat {
+    text-align: center;
+  }
+
+  .hero-stat-num {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 28px;
+    color: var(--ink);
+    display: block;
+  }
+
+  .hero-stat-label {
+    font-size: 12px;
+    color: var(--ink-faint);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.06em;
+  }
+
+  .hero-stat-divider {
+    width: 1px;
+    height: 36px;
+    background: var(--border-strong);
+    flex-shrink: 0;
+  }
+
+  /* ── SECTION COMMON ── */
+  .section {
+    padding: 88px 48px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label::before {
+    content: '';
+    display: inline-block;
+    width: 24px; height: 1px;
+    background: var(--ink-faint);
+  }
+
+  .section-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(28px, 4vw, 42px);
+    line-height: 1.1;
+    color: var(--ink);
+    margin-bottom: 20px;
+    max-width: 680px;
+  }
+
+  .section-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .section-body {
+    font-size: 16px;
+    color: var(--ink-mid);
+    line-height: 1.7;
+    max-width: 620px;
+    margin-bottom: 16px;
+  }
+
+  /* ── PROBLEM ── */
+  .problem-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: start;
+  }
+
+  .problem-callouts {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 8px;
+  }
+
+  .problem-callout {
+    display: flex;
+    gap: 16px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-2);
+  }
+
+  .problem-callout.highlight {
+    border-color: rgba(201,64,64,0.3);
+    background: var(--coral-pale);
+  }
+
+  .pc-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .pc-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .pc-body {
+    font-size: 13px;
+    color: var(--ink-mid);
+    line-height: 1.5;
+  }
+
+  /* ── FEATURES ── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 40px;
+  }
+
+  .feature-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    background: var(--surface);
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--card-color, var(--accent)), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .feature-card:hover {
+    border-color: var(--card-color, var(--accent));
+    box-shadow: 0 4px 24px rgba(74,63,160,0.08);
+    transform: translateY(-2px);
+  }
+
+  .feature-card:hover::before { opacity: 1; }
+
+  .fc-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    margin-bottom: 16px;
+    background: var(--icon-bg, var(--accent-pale));
+  }
+
+  .fc-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--card-color, var(--accent));
+    margin-bottom: 8px;
+    letter-spacing: 0.08em;
+  }
+
+  .fc-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .fc-body {
+    font-size: 13px;
+    color: var(--ink-faint);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  .fc-tag {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    background: var(--icon-bg, var(--accent-pale));
+    color: var(--card-color, var(--accent));
+  }
+
+  /* ── HOW IT WORKS ── */
+  .how-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: start;
+    margin-top: 40px;
+  }
+
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .step {
+    display: flex;
+    gap: 20px;
+    position: relative;
+  }
+
+  .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 48px;
+    bottom: -8px;
+    width: 2px;
+    background: var(--border-strong);
+  }
+
+  .step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .step-content {
+    padding-bottom: 36px;
+  }
+
+  .step-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  .step-body {
+    font-size: 13px;
+    color: var(--ink-mid);
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
+
+  .code-block {
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .code-block-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-3);
+  }
+
+  .code-block-lang {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink-faint);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .code-block-dots {
+    display: flex;
+    gap: 5px;
+  }
+
+  .code-block-dots span {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--border-strong);
+  }
+
+  .code-block pre {
+    padding: 20px;
+    overflow-x: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--ink-mid);
+    margin: 0;
+  }
+
+  .code-block pre .kw { color: var(--accent); font-weight: 500; }
+  .code-block pre .fn { color: var(--teal); }
+  .code-block pre .str { color: var(--amber); }
+  .code-block pre .cm { color: var(--ink-faint); font-style: italic; }
+  .code-block pre .de { color: var(--accent-2); }
+
+  .dashboard-placeholder {
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 16/11;
+    position: relative;
+  }
+
+  .dp-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-3);
+  }
+
+  .dp-bar-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+
+  .dp-bar-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-left: 4px;
+  }
+
+  .dp-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .dp-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .dp-row-op {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .dp-row-op.write { background: var(--teal-pale); color: var(--teal); }
+  .dp-row-op.read { background: var(--accent-pale); color: var(--accent); }
+  .dp-row-op.compress { background: var(--amber-pale); color: var(--amber); }
+
+  .dp-row-desc {
+    font-size: 11px;
+    color: var(--ink-mid);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dp-row-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    flex-shrink: 0;
+  }
+
+  .dp-row-status {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dp-row-status.ok { background: var(--green); }
+  .dp-row-status.err { background: var(--coral); }
+
+  /* ── FRAMEWORK SUPPORT ── */
+  .frameworks-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 32px;
+  }
+
+  .framework-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    background: var(--surface-2);
+    transition: all 0.15s;
+    text-decoration: none;
+    color: var(--ink);
+  }
+
+  .framework-badge:hover {
+    border-color: var(--accent);
+    background: var(--accent-pale);
+  }
+
+  .fw-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .fw-name {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .fw-type {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    display: block;
+    margin-top: 1px;
+    letter-spacing: 0.04em;
+  }
+
+  .ts-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #2563eb18, #7c3aed18);
+    border: 1px solid rgba(37,99,235,0.25);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-mid);
+    margin-top: 16px;
+  }
+
+  .ts-pill .ts-logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 6px;
+    background: #2563eb;
+    color: white;
+    border-radius: 3px;
+  }
+
+  /* ── DASHBOARD PREVIEW ── */
+  .dashboard-views {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 40px;
+  }
+
+  .view-card {
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--surface-2);
+  }
+
+  .view-card-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-3);
+  }
+
+  .view-card-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: 0.04em;
+  }
+
+  .view-card-sub {
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-top: 2px;
+  }
+
+  .view-card-body {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .view-row {
+    height: 28px;
+    border-radius: 5px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 8px;
+  }
+
+  .view-row-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .view-row-line {
+    height: 7px;
+    border-radius: 3px;
+    background: var(--border-strong);
+    flex: 1;
+  }
+
+  .view-row-tag {
+    height: 16px;
+    width: 40px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .view-detail {
+    padding: 14px;
+  }
+
+  .view-detail-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .view-detail-val {
+    height: 8px;
+    border-radius: 3px;
+    background: var(--border-strong);
+    margin-bottom: 12px;
+  }
+
+  .view-score-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .view-score-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-faint);
+    width: 50px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .view-score-track {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border-strong);
+    overflow: hidden;
+  }
+
+  .view-score-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--teal);
+  }
+
+  /* ── QUICKSTART ── */
+  .quickstart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 40px;
+  }
+
+  /* ── ARCHITECTURE ── */
+  .arch-section {
+    background: var(--surface-2);
+  }
+
+  .arch-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+    margin-top: 40px;
+  }
+
+  .arch-diagram {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .arch-layer {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .arch-layer-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-align: right;
+  }
+
+  .arch-boxes {
+    display: flex;
+    gap: 6px;
+  }
+
+  .arch-box {
+    flex: 1;
+    padding: 10px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    text-align: center;
+    border: 1px solid;
+    line-height: 1.3;
+  }
+
+  .arch-connector-row {
+    grid-column: 2;
+    display: flex;
+    align-items: center;
+    padding-left: 4px;
+  }
+
+  .arch-connector-line {
+    width: 2px;
+    height: 16px;
+    background: var(--border-strong);
+    margin-left: 20px;
+  }
+
+  .arch-props {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .arch-prop {
+    display: flex;
+    gap: 16px;
+  }
+
+  .arch-prop-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .arch-prop-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .arch-prop-body {
+    font-size: 13px;
+    color: var(--ink-mid);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 48px;
+    border-top: 1px solid var(--border);
+  }
+
+  .footer-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+
+  .footer-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .footer-wordmark {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 20px;
+    color: var(--ink);
+  }
+
+  .footer-tagline {
+    font-size: 13px;
+    color: var(--ink-faint);
+  }
+
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .footer-link {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-mid);
+    text-decoration: none;
+    background: var(--surface-2);
+    transition: all 0.15s;
+  }
+
+  .footer-link:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-pale);
+  }
+
+  .footer-link svg {
+    width: 15px; height: 15px;
+    opacity: 0.7;
+  }
+
+  .footer-bottom {
+    max-width: 1080px;
+    margin: 32px auto 0;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .footer-license {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.04em;
+  }
+
+  .footer-copy {
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 0 24px; }
+    .nav-links { display: none; }
+
+    .hero { padding: 64px 24px 56px; }
+
+    .section { padding: 64px 24px; }
+
+    .problem-layout,
+    .how-layout,
+    .arch-layout,
+    .quickstart-grid { grid-template-columns: 1fr; gap: 40px; }
+
+    .features-grid { grid-template-columns: 1fr 1fr; }
+
+    .dashboard-views { grid-template-columns: 1fr; }
+
+    footer { padding: 40px 24px; }
+  }
+
+  @media (max-width: 560px) {
+    .features-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── NAVIGATION ── -->
+<nav>
+  <a href="#" class="nav-brand">
+    <div class="nav-logo">
+      <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="9" cy="9" r="6" stroke="white" stroke-width="1.5" fill="none"/>
+        <circle cx="9" cy="9" r="2.5" fill="white"/>
+        <path d="M9 3 L9 1M9 17 L9 15M3 9 L1 9M17 9 L15 9" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="nav-wordmark">MemoryLens</span>
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how-it-works">How It Works</a></li>
+    <li><a href="#quickstart">Quick Start</a></li>
+    <li><a href="#architecture">Architecture</a></li>
+  </ul>
+
+  <div class="nav-cta">
+    <a href="https://github.com/memorylens/memorylens" class="btn-ghost">GitHub</a>
+    <a href="https://pypi.org/project/memorylens" class="btn-primary">Install</a>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-eyebrow">Open Source · Apache 2.0</div>
+
+  <h1 class="hero-title"><em>Memory</em>Lens</h1>
+  <p class="hero-tagline">Observability and debugging for AI agent memory systems</p>
+
+  <div class="hero-badges">
+    <div class="install-badge">
+      <span class="badge-label py">pip</span>
+      <span class="badge-cmd">pip install memorylens</span>
+    </div>
+    <div class="install-badge">
+      <span class="badge-label npm">npm</span>
+      <span class="badge-cmd">npm install memorylens</span>
+    </div>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <span class="hero-stat-num">&lt;2ms</span>
+      <span class="hero-stat-label">p99 overhead</span>
+    </div>
+    <div class="hero-stat-divider"></div>
+    <div class="hero-stat">
+      <span class="hero-stat-num">OTLP</span>
+      <span class="hero-stat-label">native export</span>
+    </div>
+    <div class="hero-stat-divider"></div>
+    <div class="hero-stat">
+      <span class="hero-stat-num">5+</span>
+      <span class="hero-stat-label">frameworks</span>
+    </div>
+    <div class="hero-stat-divider"></div>
+    <div class="hero-stat">
+      <span class="hero-stat-num">3 lines</span>
+      <span class="hero-stat-label">to instrument</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── PROBLEM ── -->
+<section class="section" id="problem">
+  <div class="section-inner">
+    <div class="section-label">The Problem</div>
+    <div class="problem-layout">
+      <div>
+        <h2 class="section-title">Memory debugging is <em>impossible</em> today</h2>
+        <p class="section-body">
+          AI agents fail in subtle, hard-to-reproduce ways. Your agent "forgot" a critical fact. Retrieval returned the wrong memories. Compression destroyed context. But you have no idea when it happened or why.
+        </p>
+        <p class="section-body">
+          Every major observability tool — LangSmith, Langfuse, Phoenix — traces LLM calls. None of them instrument the memory pipeline. The writes, reads, compressions, and updates that determine what your agent knows are completely invisible.
+        </p>
+        <p class="section-body">
+          MemoryLens closes that gap. Instrument once. See everything.
+        </p>
+      </div>
+      <div class="problem-callouts">
+        <div class="problem-callout highlight">
+          <div class="pc-icon">🔮</div>
+          <div>
+            <div class="pc-title">The silent drop</div>
+            <div class="pc-body">A memory write returns success but the backend silently drops the content due to a deduplication policy. Your agent never learns this happened.</div>
+          </div>
+        </div>
+        <div class="problem-callout highlight">
+          <div class="pc-icon">🔍</div>
+          <div>
+            <div class="pc-title">The wrong retrieval</div>
+            <div class="pc-body">Search returns results with 0.31 similarity scores when your threshold is 0.4. The agent gets no memories — but the error is invisible upstream.</div>
+          </div>
+        </div>
+        <div class="problem-callout highlight">
+          <div class="pc-icon">📉</div>
+          <div>
+            <div class="pc-title">Lossy compression</div>
+            <div class="pc-body">Summarization compresses 5,000 tokens to 300. The semantic loss score is 0.78. Key facts are gone. There's no audit trail.</div>
+          </div>
+        </div>
+        <div class="problem-callout">
+          <div class="pc-icon">💸</div>
+          <div>
+            <div class="pc-title">Unknown memory costs</div>
+            <div class="pc-body">Embedding generation, LLM compression, vector store operations — what's the real cost per session? Without attribution, you can't optimize.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ── -->
+<section class="section" id="features">
+  <div class="section-inner">
+    <div class="section-label">Capabilities</div>
+    <h2 class="section-title">Full visibility across the memory pipeline</h2>
+    <p class="section-body">Six instruments covering every stage — from the moment content is written to when it's retrieved, compressed, or lost.</p>
+
+    <div class="features-grid">
+
+      <div class="feature-card" style="--card-color: var(--teal); --icon-bg: var(--teal-pale);">
+        <div class="fc-icon">🔬</div>
+        <div class="fc-num">01 — Write-Path Tracing</div>
+        <div class="fc-title">See every memory write, including silent drops</div>
+        <p class="fc-body">Instrument <code>memory.write</code> and <code>memory.update</code> spans across any backend. Capture the content stored, embedding model used, vector dimensions, and drop policies triggered. Know exactly when and why a write succeeded — or was silently discarded.</p>
+        <span class="fc-tag">@instrument_write</span>
+      </div>
+
+      <div class="feature-card" style="--card-color: var(--accent); --icon-bg: var(--accent-pale);">
+        <div class="fc-icon">🎯</div>
+        <div class="fc-num">02 — Retrieval Debugger</div>
+        <div class="fc-title">Debug why retrieval returned wrong results</div>
+        <p class="fc-body">Every <code>memory.read</code> span records the query, results count, per-result similarity scores, threshold, and top-k. Visualize the score distribution. Find the retrieval misses and threshold miscalibrations that make your agent hallucinate.</p>
+        <span class="fc-tag">@instrument_read</span>
+      </div>
+
+      <div class="feature-card" style="--card-color: var(--amber); --icon-bg: var(--amber-pale);">
+        <div class="fc-icon">📊</div>
+        <div class="fc-num">03 — Compression Auditor</div>
+        <div class="fc-title">Measure semantic loss in memory summarization</div>
+        <p class="fc-body">Track <code>memory.compress</code> spans with pre/post content, compression ratio, semantic loss score, and the model used. Detect when summarization is destroying critical context before it affects agent quality. Compare compression strategies head-to-head.</p>
+        <span class="fc-tag">@instrument_compress</span>
+      </div>
+
+      <div class="feature-card" style="--card-color: var(--coral); --icon-bg: var(--coral-pale);">
+        <div class="fc-icon">📡</div>
+        <div class="fc-num">04 — Memory Drift Detection</div>
+        <div class="fc-title">Track how memory evolves across sessions</div>
+        <p class="fc-body">Instrument <code>memory.update</code> spans with previous and new content versions, update type (merge/replace/append), and memory key lineage. Build a timeline of how agent knowledge changes — and catch regressions where updates overwrite correct information.</p>
+        <span class="fc-tag">@instrument_update</span>
+      </div>
+
+      <div class="feature-card" style="--card-color: var(--green); --icon-bg: var(--green-pale);">
+        <div class="fc-icon">💰</div>
+        <div class="fc-num">05 — Cost Attribution</div>
+        <div class="fc-title">Know the real cost of your memory pipeline</div>
+        <p class="fc-body">Attribute embedding generation, LLM compression, and vector store operations to agents, sessions, and users. Break down costs by operation type. Identify the expensive sessions and optimize where it matters most. Export as JSONL for billing integrations.</p>
+        <span class="fc-tag">memorylens stats</span>
+      </div>
+
+      <div class="feature-card" style="--card-color: var(--accent-2); --icon-bg: var(--accent-pale);">
+        <div class="fc-icon">🔔</div>
+        <div class="fc-num">06 — Alerting</div>
+        <div class="fc-title">Get notified when memory health degrades</div>
+        <p class="fc-body">Set thresholds on error rates, drop rates, retrieval scores, and compression ratios. Route alerts to any OTLP-compatible backend — Grafana, Datadog, New Relic, Honeycomb. Self-hosted means your memory content never leaves your infrastructure.</p>
+        <span class="fc-tag">otlp export</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section class="section" id="how-it-works">
+  <div class="section-inner">
+    <div class="section-label">How It Works</div>
+    <h2 class="section-title">Instrument → Trace → Debug</h2>
+
+    <div class="how-layout">
+      <div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <div class="step-title">Instrument your memory functions</div>
+              <p class="step-body">Decorate existing memory functions with <code>@instrument_write</code>, <code>@instrument_read</code>, and friends — or use auto-instrumentation for LangChain and Mem0 with zero code changes. Call <code>memorylens.init()</code> once at startup.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <div class="step-title">Traces flow to your backend</div>
+              <p class="step-body">Every memory operation generates a structured span — operation type, timing, content, scores, status. Spans are flushed asynchronously via <code>BatchSpanProcessor</code> with &lt;2ms p99 overhead. Local SQLite by default, OTLP for production.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <div class="step-title">Debug with CLI or dashboard</div>
+              <p class="step-body">Use <code>memorylens traces list</code> to browse, filter by operation/status/time, and tail live. Use <code>memorylens traces show &lt;id&gt;</code> for full span detail. Or ship to Grafana, Honeycomb, or any OTLP backend for team dashboards.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">Python</span>
+            <div class="code-block-dots">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+          <pre><code><span class="kw">import</span> memorylens
+
+<span class="cm"># 1. Initialize once</span>
+memorylens.<span class="fn">init</span>()
+
+<span class="cm"># 2. Decorate your memory functions</span>
+<span class="de">@memorylens.instrument_write</span>(backend=<span class="str">"my_db"</span>)
+<span class="kw">def</span> <span class="fn">store</span>(content: str) -> bool:
+    <span class="kw">return</span> db.save(content)
+
+<span class="de">@memorylens.instrument_read</span>(backend=<span class="str">"my_db"</span>)
+<span class="kw">def</span> <span class="fn">search</span>(query: str) -> list[str]:
+    <span class="kw">return</span> db.search(query)
+
+<span class="cm"># 3. Add session context</span>
+<span class="kw">with</span> memorylens.<span class="fn">context</span>(
+    agent_id=<span class="str">"support-bot"</span>,
+    session_id=<span class="str">"sess-123"</span>,
+    user_id=<span class="str">"user-456"</span>
+):
+    <span class="fn">store</span>(<span class="str">"user prefers vegetarian meals"</span>)
+    results = <span class="fn">search</span>(<span class="str">"dietary preferences"</span>)
+
+<span class="cm"># Or: zero-code auto-instrumentation</span>
+memorylens.<span class="fn">init</span>(instrument=[<span class="str">"langchain"</span>, <span class="str">"mem0"</span>])</code></pre>
+        </div>
+
+        <div style="margin-top: 16px;">
+          <div class="dashboard-placeholder">
+            <div class="dp-bar">
+              <div class="dp-bar-dot" style="background:#e86060;"></div>
+              <div class="dp-bar-dot" style="background:#e09030;"></div>
+              <div class="dp-bar-dot" style="background:#66bb6a;"></div>
+              <span class="dp-bar-title">memorylens — Trace List</span>
+            </div>
+            <div class="dp-content">
+              <div class="dp-row">
+                <span class="dp-row-op write">WRITE</span>
+                <span class="dp-row-desc">store_memory · support-bot · sess-123</span>
+                <span class="dp-row-time">2ms</span>
+                <span class="dp-row-status ok"></span>
+              </div>
+              <div class="dp-row">
+                <span class="dp-row-op read">READ</span>
+                <span class="dp-row-desc">search_memories · "dietary preferences" · 3 results</span>
+                <span class="dp-row-time">41ms</span>
+                <span class="dp-row-status ok"></span>
+              </div>
+              <div class="dp-row">
+                <span class="dp-row-op compress">COMPRESS</span>
+                <span class="dp-row-desc">summarize · ratio 0.06 · loss 0.78</span>
+                <span class="dp-row-time">1.2s</span>
+                <span class="dp-row-status err"></span>
+              </div>
+              <div class="dp-row">
+                <span class="dp-row-op write">WRITE</span>
+                <span class="dp-row-desc">store_memory · analytics-bot · sess-991</span>
+                <span class="dp-row-time">3ms</span>
+                <span class="dp-row-status ok"></span>
+              </div>
+              <div class="dp-row">
+                <span class="dp-row-op read">READ</span>
+                <span class="dp-row-desc">search_memories · "user preferences" · 0 results</span>
+                <span class="dp-row-time">28ms</span>
+                <span class="dp-row-status err"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FRAMEWORK SUPPORT ── -->
+<section class="section" id="frameworks" style="background: var(--surface-2);">
+  <div class="section-inner">
+    <div class="section-label">Framework Support</div>
+    <h2 class="section-title">Works with the frameworks you already use</h2>
+    <p class="section-body">Auto-instrumentation for major memory frameworks — zero code changes required. Manual decorator API for custom backends.</p>
+
+    <div class="frameworks-grid">
+      <a href="#quickstart" class="framework-badge">
+        <div class="fw-icon" style="background: #f0f4ff;">🦜</div>
+        <div>
+          <div class="fw-name">LangChain</div>
+          <span class="fw-type">pip install memorylens[langchain]</span>
+        </div>
+      </a>
+      <a href="#quickstart" class="framework-badge">
+        <div class="fw-icon" style="background: #f0fff4;">🧠</div>
+        <div>
+          <div class="fw-name">Mem0</div>
+          <span class="fw-type">pip install memorylens[mem0]</span>
+        </div>
+      </a>
+      <a href="#quickstart" class="framework-badge">
+        <div class="fw-icon" style="background: #fff8f0;">🦙</div>
+        <div>
+          <div class="fw-name">LlamaIndex</div>
+          <span class="fw-type">pip install memorylens[llama]</span>
+        </div>
+      </a>
+      <a href="#quickstart" class="framework-badge">
+        <div class="fw-icon" style="background: #f5f0ff;">✉️</div>
+        <div>
+          <div class="fw-name">Letta</div>
+          <span class="fw-type">pip install memorylens[letta]</span>
+        </div>
+      </a>
+      <a href="#quickstart" class="framework-badge">
+        <div class="fw-icon" style="background: #f0f9ff;">⚡</div>
+        <div>
+          <div class="fw-name">Zep</div>
+          <span class="fw-type">pip install memorylens[zep]</span>
+        </div>
+      </a>
+      <a href="#quickstart" class="framework-badge">
+        <div class="fw-icon" style="background: var(--surface-3);">🔧</div>
+        <div>
+          <div class="fw-name">Custom Backend</div>
+          <span class="fw-type">@instrument_write / @instrument_read</span>
+        </div>
+      </a>
+    </div>
+
+    <div style="margin-top: 24px;">
+      <div class="ts-pill">
+        <span class="ts-logo">TS</span>
+        JS/TS SDK available — <code>npm install memorylens</code> · Same API, same dashboard
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── DASHBOARD PREVIEW ── -->
+<section class="section" id="dashboard">
+  <div class="section-inner">
+    <div class="section-label">Dashboard Preview</div>
+    <h2 class="section-title">Three views for three kinds of debugging</h2>
+    <p class="section-body">The MemoryLens dashboard gives you structured access to every memory operation. Filter by agent, session, operation type, or time range. Drill down into individual spans. Debug retrieval quality with score visualizations.</p>
+
+    <div class="dashboard-views">
+      <!-- Trace List View -->
+      <div class="view-card">
+        <div class="view-card-header">
+          <div class="view-card-title">Trace List</div>
+          <div class="view-card-sub">All memory operations, filterable</div>
+        </div>
+        <div class="view-card-body">
+          <div class="view-row">
+            <div class="view-row-dot" style="background:var(--teal);"></div>
+            <div class="view-row-line" style="max-width:60%;"></div>
+            <div class="view-row-tag" style="background:var(--teal-pale);border-radius:3px;"></div>
+          </div>
+          <div class="view-row">
+            <div class="view-row-dot" style="background:var(--accent);"></div>
+            <div class="view-row-line" style="max-width:75%;"></div>
+            <div class="view-row-tag" style="background:var(--accent-pale);border-radius:3px;"></div>
+          </div>
+          <div class="view-row">
+            <div class="view-row-dot" style="background:var(--coral);"></div>
+            <div class="view-row-line" style="max-width:50%;"></div>
+            <div class="view-row-tag" style="background:var(--coral-pale);border-radius:3px;"></div>
+          </div>
+          <div class="view-row">
+            <div class="view-row-dot" style="background:var(--amber);"></div>
+            <div class="view-row-line" style="max-width:80%;"></div>
+            <div class="view-row-tag" style="background:var(--amber-pale);border-radius:3px;"></div>
+          </div>
+          <div class="view-row">
+            <div class="view-row-dot" style="background:var(--teal);"></div>
+            <div class="view-row-line" style="max-width:65%;"></div>
+            <div class="view-row-tag" style="background:var(--teal-pale);border-radius:3px;"></div>
+          </div>
+        </div>
+        <div style="padding:12px 14px; border-top:1px solid var(--border);">
+          <div style="font-size:11px; color:var(--ink-faint); font-family:'DM Mono',monospace;">Filter: operation · status · agent · time range</div>
+        </div>
+      </div>
+
+      <!-- Trace Detail View -->
+      <div class="view-card">
+        <div class="view-card-header">
+          <div class="view-card-title">Trace Detail</div>
+          <div class="view-card-sub">Full span attributes and content</div>
+        </div>
+        <div class="view-detail">
+          <div class="view-detail-label">Operation</div>
+          <div style="display:flex;gap:6px;margin-bottom:14px;">
+            <div style="padding:3px 8px;background:var(--teal-pale);color:var(--teal);border-radius:4px;font-family:'DM Mono',monospace;font-size:10px;font-weight:500;">memory.write</div>
+            <div style="padding:3px 8px;background:var(--green-pale);color:var(--green);border-radius:4px;font-family:'DM Mono',monospace;font-size:10px;font-weight:500;">status: ok</div>
+          </div>
+          <div class="view-detail-label">Timing</div>
+          <div class="view-detail-val" style="width:40%;"></div>
+          <div class="view-detail-label">Agent / Session / User</div>
+          <div class="view-detail-val" style="width:70%;"></div>
+          <div class="view-detail-label">Backend · Memory Key · Embedding</div>
+          <div class="view-detail-val" style="width:60%;"></div>
+          <div class="view-detail-label">Input Content</div>
+          <div style="height:40px;border-radius:4px;background:var(--surface-3);margin-bottom:14px;"></div>
+          <div class="view-detail-label">Output Content</div>
+          <div style="height:28px;border-radius:4px;background:var(--surface-3);"></div>
+        </div>
+      </div>
+
+      <!-- Retrieval Debugger View -->
+      <div class="view-card">
+        <div class="view-card-header">
+          <div class="view-card-title">Retrieval Debugger</div>
+          <div class="view-card-sub">Similarity scores per result</div>
+        </div>
+        <div class="view-detail">
+          <div class="view-detail-label">Query</div>
+          <div class="view-detail-val" style="width:80%;"></div>
+          <div class="view-detail-label">Results · Threshold · Top-K</div>
+          <div style="display:flex;gap:6px;margin-bottom:14px;">
+            <div style="padding:3px 8px;background:var(--accent-pale);color:var(--accent);border-radius:4px;font-family:'DM Mono',monospace;font-size:10px;font-weight:500;">3 results</div>
+            <div style="padding:3px 8px;background:var(--surface-3);color:var(--ink-faint);border-radius:4px;font-family:'DM Mono',monospace;font-size:10px;">threshold: 0.40</div>
+          </div>
+          <div class="view-detail-label">Similarity Scores</div>
+          <div class="view-score-bar">
+            <span class="view-score-label">result_1</span>
+            <div class="view-score-track"><div class="view-score-fill" style="width:84%;"></div></div>
+            <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--ink-faint);">0.84</span>
+          </div>
+          <div class="view-score-bar">
+            <span class="view-score-label">result_2</span>
+            <div class="view-score-track"><div class="view-score-fill" style="width:62%;background:var(--amber);"></div></div>
+            <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--ink-faint);">0.62</span>
+          </div>
+          <div class="view-score-bar">
+            <span class="view-score-label">result_3</span>
+            <div class="view-score-track"><div class="view-score-fill" style="width:31%;background:var(--coral);"></div></div>
+            <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--ink-faint);">0.31</span>
+          </div>
+          <div class="view-score-bar">
+            <span class="view-score-label" style="color:var(--coral);">dropped</span>
+            <div class="view-score-track"><div class="view-score-fill" style="width:18%;background:var(--coral);opacity:0.4;"></div></div>
+            <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--coral);">0.18</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── QUICK START ── -->
+<section class="section" id="quickstart">
+  <div class="section-inner">
+    <div class="section-label">Quick Start</div>
+    <h2 class="section-title">Up and running in minutes</h2>
+    <p class="section-body">Instrument your first memory function with two lines of code. Everything is captured locally by default — no external service required.</p>
+
+    <div class="quickstart-grid">
+      <div>
+        <div style="margin-bottom:12px;">
+          <span style="font-size:13px;font-weight:600;color:var(--ink);">Python</span>
+        </div>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">bash</span>
+            <div class="code-block-dots"><span></span><span></span><span></span></div>
+          </div>
+          <pre><code>pip install memorylens
+<span class="cm"># With LangChain or Mem0 support:</span>
+pip install memorylens[langchain]
+pip install memorylens[mem0]</code></pre>
+        </div>
+        <div class="code-block" style="margin-top:12px;">
+          <div class="code-block-header">
+            <span class="code-block-lang">Python</span>
+            <div class="code-block-dots"><span></span><span></span><span></span></div>
+          </div>
+          <pre><code><span class="kw">import</span> memorylens
+
+<span class="cm"># Initialize — SQLite local storage by default</span>
+memorylens.<span class="fn">init</span>()
+
+<span class="cm"># Manual instrumentation</span>
+<span class="de">@memorylens.instrument_write</span>(backend=<span class="str">"mydb"</span>)
+<span class="kw">def</span> <span class="fn">store_memory</span>(content: str) -> bool:
+    <span class="kw">return</span> db.save(content)
+
+<span class="de">@memorylens.instrument_read</span>(backend=<span class="str">"mydb"</span>)
+<span class="kw">def</span> <span class="fn">search_memory</span>(query: str) -> list[str]:
+    <span class="kw">return</span> db.search(query)
+
+<span class="cm"># Auto-instrumentation for supported frameworks</span>
+memorylens.<span class="fn">init</span>(instrument=[<span class="str">"langchain"</span>, <span class="str">"mem0"</span>])
+
+<span class="cm"># Inspect traces in the CLI</span>
+<span class="cm"># $ memorylens traces list</span>
+<span class="cm"># $ memorylens traces show &lt;trace-id&gt;</span>
+<span class="cm"># $ memorylens stats</span></code></pre>
+        </div>
+      </div>
+
+      <div>
+        <div style="margin-bottom:12px;">
+          <span style="font-size:13px;font-weight:600;color:var(--ink);">TypeScript</span>
+        </div>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">bash</span>
+            <div class="code-block-dots"><span></span><span></span><span></span></div>
+          </div>
+          <pre><code>npm install memorylens
+<span class="cm"># or</span>
+pnpm add memorylens</code></pre>
+        </div>
+        <div class="code-block" style="margin-top:12px;">
+          <div class="code-block-header">
+            <span class="code-block-lang">TypeScript</span>
+            <div class="code-block-dots"><span></span><span></span><span></span></div>
+          </div>
+          <pre><code><span class="kw">import</span> memorylens <span class="kw">from</span> <span class="str">'memorylens'</span>
+
+<span class="cm">// Initialize</span>
+memorylens.<span class="fn">init</span>()
+
+<span class="cm">// Wrap memory functions</span>
+<span class="kw">const</span> storeMemory = memorylens.<span class="fn">instrumentWrite</span>(
+  <span class="kw">async</span> (content: string) => {
+    <span class="kw">return</span> <span class="kw">await</span> db.<span class="fn">save</span>(content)
+  },
+  { backend: <span class="str">'mydb'</span> }
+)
+
+<span class="kw">const</span> searchMemory = memorylens.<span class="fn">instrumentRead</span>(
+  <span class="kw">async</span> (query: string) => {
+    <span class="kw">return</span> <span class="kw">await</span> db.<span class="fn">search</span>(query)
+  },
+  { backend: <span class="str">'mydb'</span> }
+)
+
+<span class="cm">// Session context</span>
+<span class="kw">await</span> memorylens.<span class="fn">withContext</span>(
+  { agentId: <span class="str">'support-bot'</span>, sessionId: <span class="str">'sess-123'</span> },
+  <span class="kw">async</span> () => {
+    <span class="kw">await</span> <span class="fn">storeMemory</span>(<span class="str">'user prefers vegetarian meals'</span>)
+    <span class="kw">const</span> results = <span class="kw">await</span> <span class="fn">searchMemory</span>(<span class="str">'dietary preferences'</span>)
+  }
+)</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:32px; padding:20px 24px; border:1px solid var(--border-strong); border-radius:10px; background:var(--surface-2);">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-faint);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:12px;">CLI Commands</div>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-block-lang">bash</span>
+          <div class="code-block-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><code>memorylens init                               <span class="cm"># Set up local storage</span>
+memorylens traces list                        <span class="cm"># Browse all traces</span>
+memorylens traces list --status error         <span class="cm"># Filter by status</span>
+memorylens traces list --operation read       <span class="cm"># Filter by operation</span>
+memorylens traces list --last 1h              <span class="cm"># Last hour only</span>
+memorylens traces show &lt;trace-id&gt;            <span class="cm"># Inspect a trace</span>
+memorylens traces tail                        <span class="cm"># Live tail</span>
+memorylens traces export -o traces.jsonl      <span class="cm"># Export as JSONL</span>
+memorylens stats                              <span class="cm"># Summary statistics</span>
+memorylens stats --group-by operation         <span class="cm"># Breakdown by type</span></code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ARCHITECTURE ── -->
+<section class="section arch-section" id="architecture">
+  <div class="section-inner">
+    <div class="section-label">Architecture</div>
+    <h2 class="section-title">OTLP-native, open source, self-hosted</h2>
+
+    <div class="arch-layout">
+      <div>
+        <div class="arch-diagram">
+          <!-- Your Agent Layer -->
+          <div class="arch-layer">
+            <div class="arch-layer-label">your agent</div>
+            <div class="arch-boxes">
+              <div class="arch-box" style="background:var(--accent-pale);border-color:var(--accent);color:var(--accent);">LangChain Memory</div>
+              <div class="arch-box" style="background:var(--accent-pale);border-color:var(--accent);color:var(--accent);">Mem0</div>
+              <div class="arch-box" style="background:var(--accent-pale);border-color:var(--accent);color:var(--accent);">Custom Backend</div>
+            </div>
+          </div>
+
+          <div class="arch-layer">
+            <div></div>
+            <div class="arch-connector-row">
+              <div class="arch-connector-line"></div>
+            </div>
+          </div>
+
+          <!-- MemoryLens SDK -->
+          <div class="arch-layer">
+            <div class="arch-layer-label">memorylens sdk</div>
+            <div class="arch-boxes">
+              <div class="arch-box" style="background:var(--surface-3);border-color:var(--border-strong);color:var(--ink);flex:3;">
+                Decorators + Auto-Instrumentors → MemorySpan → BatchSpanProcessor
+              </div>
+            </div>
+          </div>
+
+          <div class="arch-layer">
+            <div></div>
+            <div class="arch-connector-row">
+              <div class="arch-connector-line"></div>
+            </div>
+          </div>
+
+          <!-- Exporters -->
+          <div class="arch-layer">
+            <div class="arch-layer-label">exporters</div>
+            <div class="arch-boxes">
+              <div class="arch-box" style="background:var(--teal-pale);border-color:var(--teal);color:var(--teal);">SQLite</div>
+              <div class="arch-box" style="background:var(--amber-pale);border-color:var(--amber);color:var(--amber);">OTLP</div>
+              <div class="arch-box" style="background:var(--surface-3);border-color:var(--border-strong);color:var(--ink-mid);">JSONL</div>
+            </div>
+          </div>
+
+          <div class="arch-layer">
+            <div></div>
+            <div class="arch-connector-row">
+              <div class="arch-connector-line"></div>
+            </div>
+          </div>
+
+          <!-- Backends -->
+          <div class="arch-layer">
+            <div class="arch-layer-label">backends</div>
+            <div class="arch-boxes">
+              <div class="arch-box" style="background:var(--surface-2);border-color:var(--border-strong);color:var(--ink-mid);">CLI / Local</div>
+              <div class="arch-box" style="background:var(--surface-2);border-color:var(--border-strong);color:var(--ink-mid);">Grafana</div>
+              <div class="arch-box" style="background:var(--surface-2);border-color:var(--border-strong);color:var(--ink-mid);">Honeycomb</div>
+              <div class="arch-box" style="background:var(--surface-2);border-color:var(--border-strong);color:var(--ink-mid);">Datadog</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arch-props">
+        <div class="arch-prop">
+          <div class="arch-prop-icon">🔭</div>
+          <div>
+            <div class="arch-prop-title">OpenTelemetry Native</div>
+            <p class="arch-prop-body">MemorySpan maps 1:1 to OTel spans. Every attribute — operation, backend, scores, content — is a proper OTel attribute. Send to any OTLP-compatible backend with standard env vars. No vendor lock-in.</p>
+          </div>
+        </div>
+        <div class="arch-prop">
+          <div class="arch-prop-icon">🏠</div>
+          <div>
+            <div class="arch-prop-title">Self-Hosted by Default</div>
+            <p class="arch-prop-body">Traces stay in <code>~/.memorylens/traces.db</code> on your machine by default. Your agent's memory content — which may include PII — never leaves your infrastructure unless you explicitly configure an OTLP endpoint.</p>
+          </div>
+        </div>
+        <div class="arch-prop">
+          <div class="arch-prop-icon">⚡</div>
+          <div>
+            <div class="arch-prop-title">Non-Blocking, &lt;2ms Overhead</div>
+            <p class="arch-prop-body">The <code>BatchSpanProcessor</code> enqueues spans to a background thread. The instrumented function returns immediately. p99 overhead is under 2ms — safe for production memory pipelines with tight latency budgets.</p>
+          </div>
+        </div>
+        <div class="arch-prop">
+          <div class="arch-prop-icon">🔓</div>
+          <div>
+            <div class="arch-prop-title">Open Source, Apache 2.0</div>
+            <p class="arch-prop-body">Inspect the code, extend it, contribute back. The instrumentation protocol spec is public — build integrations for any memory framework. Validate community instrumentors with <code>memorylens validate integration</code>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-wordmark">MemoryLens</div>
+      <div class="footer-tagline">Observability for AI agent memory systems</div>
+    </div>
+
+    <div class="footer-links">
+      <a href="https://github.com/memorylens/memorylens" class="footer-link">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        GitHub
+      </a>
+      <a href="https://pypi.org/project/memorylens" class="footer-link">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm-1.25 4.5c2.9 0 5.25 2.35 5.25 5.25v1h-2.5V9.75a2.75 2.75 0 00-2.75-2.75H8.5A2.75 2.75 0 005.75 9.75v2.75h7.75v1.25H5.75v1.5c0 2.9 2.35 5.25 5.25 5.25h2.25c2.9 0 5.25-2.35 5.25-5.25v-1h2.5v1c0 4.28-3.47 7.75-7.75 7.75H11c-4.28 0-7.75-3.47-7.75-7.75V9.75C3.25 5.47 6.72 2 11 2h.75l-.25 2.5H10.75z"/></svg>
+        PyPI
+      </a>
+      <a href="https://www.npmjs.com/package/memorylens" class="footer-link">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z"/></svg>
+        npm
+      </a>
+      <a href="https://github.com/memorylens/memorylens/blob/main/LICENSE" class="footer-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L4 6v6c0 5.55 3.84 10.74 9 12 .48-.11.95-.25 1.41-.42M12 2l8 4v6c0 5.55-3.84 10.74-9 12"/></svg>
+        Apache 2.0
+      </a>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="footer-license">
+      <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-faint);">Licensed under Apache 2.0 &nbsp;·&nbsp; Built for AI agent developers</span>
+    </div>
+    <div class="footer-copy">
+      <span style="font-size:12px;color:var(--ink-faint);">MemoryLens — Open Source</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
