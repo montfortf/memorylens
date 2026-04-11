@@ -26,7 +26,10 @@ def client_with_data(tmp_path):
 
     # Add rules
     exp.save_alert_rule({"name": "drift-rule", "alert_type": "drift", "threshold": 4.0, "webhook_url": None, "enabled": 1, "created_at": now})
-    exp.save_alert_rule({"name": "cost-rule", "alert_type": "cost", "threshold": 0.05, "webhook_url": "https://hooks.slack.com/x", "enabled": 0, "created_at": now})
+    exp.save_alert_rule({
+        "name": "cost-rule", "alert_type": "cost", "threshold": 0.05,
+        "webhook_url": "https://hooks.slack.com/x", "enabled": 0, "created_at": now,
+    })
 
     drift_rule = exp.get_alert_rule("drift-rule")
     # Add history
